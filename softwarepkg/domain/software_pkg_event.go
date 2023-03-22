@@ -45,7 +45,7 @@ func NewSoftwarePkgRejectedEvent(pkg *SoftwarePkgBasicInfo) (e softwarePkgReject
 	if pkg.RelevantPR != nil {
 		e.PkgId = pkg.Id
 		e.PRNum = pkg.PRNum
-		e.Reason = "package was rejected by maintainer"
+		e.Reason = "software package application was rejected by maintainer"
 	} else {
 		err = errors.New("missing pr")
 	}
@@ -58,7 +58,7 @@ func NewSoftwarePkgAbandonedEvent(pkg *SoftwarePkgBasicInfo) (e softwarePkgRejec
 	if pkg.RelevantPR != nil {
 		e.PkgId = pkg.Id
 		e.PRNum = pkg.PRNum
-		e.Reason = "package was abandoned by user"
+		e.Reason = "software package application was abandoned by author"
 	} else {
 		err = errors.New("missing pr")
 	}
@@ -71,7 +71,7 @@ func NewSoftwarePkgAlreadyClosedEvent(pkgId string, prNum int) softwarePkgReject
 	return softwarePkgRejectedEvent{
 		PkgId:  pkgId,
 		PRNum:  prNum,
-		Reason: "package is already closed",
+		Reason: "software package application is already closed",
 	}
 }
 

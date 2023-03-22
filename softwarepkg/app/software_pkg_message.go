@@ -61,6 +61,7 @@ func (s softwarePkgMessageService) HandlePkgPRCIChecked(cmd CmdToHandlePkgPRCICh
 		s.addCommentForFailedCI(&cmd)
 	}
 
+	pkg.PRNum = cmd.PRNum
 	if err := s.repo.SaveSoftwarePkg(&pkg, version); err != nil {
 		logrus.Errorf(
 			"save pkg failed when %s, err:%s",

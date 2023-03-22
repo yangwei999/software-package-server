@@ -9,6 +9,7 @@ import (
 type msgToHandlePkgPRCIChecked struct {
 	PkgId        string `json:"pkg_id"`
 	RelevantPR   string `json:"relevant_pr"`
+	PRNum        int    `json:"pr_num"`
 	FailedReason string `json:"failed_reason"`
 }
 
@@ -19,6 +20,7 @@ func (msg *msgToHandlePkgPRCIChecked) toCmd() (cmd app.CmdToHandlePkgPRCIChecked
 
 	cmd.PkgId = msg.PkgId
 	cmd.FiledReason = msg.FailedReason
+	cmd.PRNum = msg.PRNum
 
 	return
 }

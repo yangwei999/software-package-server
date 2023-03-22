@@ -42,6 +42,7 @@ type SoftwarePkgBasicInfo struct {
 	ApprovedBy  []dp.Account
 	RejectedBy  []dp.Account
 	RelevantPR  dp.URL
+	PRNum       int
 }
 
 func (entity *SoftwarePkgBasicInfo) ReviewResult() dp.PackageReviewResult {

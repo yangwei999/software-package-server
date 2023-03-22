@@ -11,6 +11,7 @@ import (
 type CmdToHandlePkgPRCIChecked struct {
 	PkgId       string
 	RelevantPR  dp.URL
+	PRNum       int
 	FiledReason string
 }
 

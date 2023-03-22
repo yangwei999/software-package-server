@@ -7,9 +7,9 @@ import (
 
 // softwarePkgApprovedEvent
 type softwarePkgApprovedEvent struct {
-	PkgId      string `json:"pkg_id"`
-	PkgName    string `json:"pkg_name"`
-	RelevantPR string `json:"pr"`
+	PkgId   string `json:"pkg_id"`
+	PkgName string `json:"pkg_name"`
+	PRNum   int    `json:"pr_num"`
 }
 
 func (e *softwarePkgApprovedEvent) Message() ([]byte, error) {
@@ -19,9 +19,9 @@ func (e *softwarePkgApprovedEvent) Message() ([]byte, error) {
 func NewSoftwarePkgApprovedEvent(pkg *SoftwarePkgBasicInfo) (e softwarePkgApprovedEvent, err error) {
 	if pkg.RelevantPR != nil {
 		e = softwarePkgApprovedEvent{
-			PkgId:      pkg.Id,
-			PkgName:    pkg.PkgName.PackageName(),
-			RelevantPR: pkg.RelevantPR.URL(),
+			PkgId:   pkg.Id,
+			PkgName: pkg.PkgName.PackageName(),
+			PRNum:   pkg.PRNum,
 		}
 	} else {
 		err = errors.New("missing pr")
@@ -41,21 +41,29 @@ func (e *softwarePkgRejectedEvent) Message() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-func NewSoftwarePkgRejectedEvent(pkg *SoftwarePkgBasicInfo) softwarePkgRejectedEvent {
-	return softwarePkgRejectedEvent{
-		PkgId:  pkg.Id,
-		PRNum:  pkg.PRNum,
-		Reason: "package was rejected by maintainer",
+func NewSoftwarePkgRejectedEvent(pkg *SoftwarePkgBasicInfo) (e softwarePkgRejectedEvent, err error) {
+	if pkg.RelevantPR != nil {
+		e.PkgId = pkg.Id
+		e.PRNum = pkg.PRNum
+		e.Reason = "package was rejected by maintainer"
+	} else {
+		err = errors.New("missing pr")
 	}
+
+	return
 }
 
 // softwarePkgAbandonedEvent
-func NewSoftwarePkgAbandonedEvent(pkg *SoftwarePkgBasicInfo) softwarePkgRejectedEvent {
-	return softwarePkgRejectedEvent{
-		PkgId:  pkg.Id,
-		PRNum:  pkg.PRNum,
-		Reason: "package was abandoned by user",
+func NewSoftwarePkgAbandonedEvent(pkg *SoftwarePkgBasicInfo) (e softwarePkgRejectedEvent, err error) {
+	if pkg.RelevantPR != nil {
+		e.PkgId = pkg.Id
+		e.PRNum = pkg.PRNum
+		e.Reason = "package was abandoned by user"
+	} else {
+		err = errors.New("missing pr")
 	}
+
+	return
 }
 
 // softwarePkgAlreadyClosedEvent

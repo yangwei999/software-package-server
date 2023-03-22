@@ -118,6 +118,8 @@ func (do *SoftwarePkgBasicDO) toSoftwarePkgBasicInfo() (info domain.SoftwarePkgB
 
 	info.Frozen = do.Frozen == frozenStatus
 
+	info.PRNum = do.PRNum
+
 	return
 }
 

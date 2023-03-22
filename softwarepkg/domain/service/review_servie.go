@@ -43,9 +43,10 @@ func (s *reviewService) RejectPkg(pkg *domain.SoftwarePkgBasicInfo, user dp.Acco
 		return err
 	}
 
-	e := domain.NewSoftwarePkgRejectedEvent(pkg)
-	err := s.message.NotifyPkgRejected(&e)
-
+	e, err := domain.NewSoftwarePkgRejectedEvent(pkg)
+	if err == nil {
+		err = s.message.NotifyPkgRejected(&e)
+	}
 	s.log(pkg, "rejected", err)
 
 	return nil
@@ -56,9 +57,10 @@ func (s *reviewService) AbandonPkg(pkg *domain.SoftwarePkgBasicInfo, user dp.Acc
 		return err
 	}
 
-	e := domain.NewSoftwarePkgAbandonedEvent(pkg)
-	err := s.message.NotifyPkgAbandoned(&e)
-
+	e, err := domain.NewSoftwarePkgAbandonedEvent(pkg)
+	if err == nil {
+		err = s.message.NotifyPkgAbandoned(&e)
+	}
 	s.log(pkg, "abandoned", err)
 
 	return nil

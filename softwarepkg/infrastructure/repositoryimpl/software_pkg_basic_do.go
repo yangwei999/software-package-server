@@ -49,8 +49,9 @@ func (s softwarePkgBasic) toSoftwarePkgBasicDO(pkg *domain.SoftwarePkgBasicInfo,
 
 	if pkg.RelevantPR != nil {
 		do.RelevantPR = pkg.RelevantPR.URL()
-		do.PRNum = pkg.PRNum
 	}
+
+	do.PRNum = pkg.PRNum
 }
 
 type SoftwarePkgBasicDO struct {

@@ -3,8 +3,6 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-
-	"github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
 )
 
 // softwarePkgApprovedEvent
@@ -34,33 +32,38 @@ func NewSoftwarePkgApprovedEvent(pkg *SoftwarePkgBasicInfo) (e softwarePkgApprov
 
 // softwarePkgRejectedEvent
 type softwarePkgRejectedEvent struct {
-	PkgId      string `json:"pkg_id"`
-	RelevantPR string `json:"pr"`
+	PkgId  string `json:"pkg_id"`
+	PRNum  int    `json:"pr_num"`
+	Reason string `json:"reason"`
 }
 
 func (e *softwarePkgRejectedEvent) Message() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-func NewSoftwarePkgRejectedEvent(pkg *SoftwarePkgBasicInfo) (e softwarePkgRejectedEvent, err error) {
-	if pkg.RelevantPR != nil {
-		e.RelevantPR = pkg.RelevantPR.URL()
-		e.PkgId = pkg.Id
-	} else {
-		err = errors.New("missing pr")
+func NewSoftwarePkgRejectedEvent(pkg *SoftwarePkgBasicInfo) softwarePkgRejectedEvent {
+	return softwarePkgRejectedEvent{
+		PkgId:  pkg.Id,
+		PRNum:  pkg.PRNum,
+		Reason: "package was rejected by maintainer",
 	}
-
-	return
 }
 
 // softwarePkgAbandonedEvent
-var NewSoftwarePkgAbandonedEvent = NewSoftwarePkgRejectedEvent
+func NewSoftwarePkgAbandonedEvent(pkg *SoftwarePkgBasicInfo) softwarePkgRejectedEvent {
+	return softwarePkgRejectedEvent{
+		PkgId:  pkg.Id,
+		PRNum:  pkg.PRNum,
+		Reason: "package was abandoned by user",
+	}
+}
 
 // softwarePkgAlreadyClosedEvent
-func NewSoftwarePkgAlreadyClosedEvent(pkgId string, pr dp.URL) softwarePkgRejectedEvent {
+func NewSoftwarePkgAlreadyClosedEvent(pkgId string, prNum int) softwarePkgRejectedEvent {
 	return softwarePkgRejectedEvent{
-		PkgId:      pkgId,
-		RelevantPR: pr.URL(),
+		PkgId:  pkgId,
+		PRNum:  prNum,
+		Reason: "package is already closed",
 	}
 }
 

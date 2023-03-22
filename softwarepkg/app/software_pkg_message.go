@@ -77,7 +77,7 @@ func (s softwarePkgMessageService) notifyPkgAlreadyClosed(cmd *CmdToHandlePkgPRC
 		return
 	}
 
-	e := domain.NewSoftwarePkgAlreadyClosedEvent(cmd.PkgId, cmd.RelevantPR)
+	e := domain.NewSoftwarePkgAlreadyClosedEvent(cmd.PkgId, cmd.PRNum)
 
 	if err := s.message.NotifyPkgAlreadyClosed(&e); err != nil {
 		logrus.Errorf(

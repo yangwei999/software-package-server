@@ -39,6 +39,7 @@ type ExistingPkgDefaultInfo struct {
 	ImporterName   string `json:"importer_name"     required:"true"`
 	ImporterEmail  string `json:"importer_email"    required:"true"`
 	ReasonToImport string `json:"reason_to_import"  required:"true"`
+	Upstream       string `json:"upstream"          required:"true"`
 }
 
 func (cfg *ExistingPkgDefaultInfo) toPkgBasicInfo() (info domain.SoftwarePkgBasicInfo, err error) {
@@ -66,6 +67,8 @@ func (cfg *ExistingPkgDefaultInfo) toPkgBasicInfo() (info domain.SoftwarePkgBasi
 	if app.ReasonToImportPkg, err = dp.NewReasonToImportPkg(cfg.ReasonToImport); err != nil {
 		return
 	}
+
+	app.Upstream, err = dp.NewURL(cfg.Upstream)
 
 	return
 }

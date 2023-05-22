@@ -44,6 +44,7 @@ func (s softwarePkgBasic) toSoftwarePkgBasicDO(pkg *domain.SoftwarePkgBasicInfo,
 		CIStatus:        pkg.CI.Status.PackageCIStatus(),
 		SpecURL:         app.SourceCode.SpecURL.URL(),
 		SrcRPMURL:       app.SourceCode.SrcRPMURL.URL(),
+		Upstream:        app.Upstream.URL(),
 		PackageDesc:     app.PackageDesc.PackageDesc(),
 		PackagePlatform: app.PackagePlatform.PackagePlatform(),
 		Sig:             app.ImportingPkgSig.ImportingPkgSig(),
@@ -82,6 +83,7 @@ type SoftwarePkgBasicDO struct {
 	ReasonToImport  string                 `gorm:"column:reason_to_import"                         json:"reason_to_import"`
 	PackagePlatform string                 `gorm:"column:package_platform"                         json:"package_platform"`
 	CIPRNum         int                    `gorm:"column:ci_pr_num"                                json:"ci_pr_num"`
+	Upstream        string                 `gorm:"column:upstream"                                 json:"upstream"`
 	AppliedAt       int64                  `gorm:"column:applied_at"                               json:"applied_at"`
 	UpdatedAt       int64                  `gorm:"column:updated_at"                               json:"updated_at"`
 	Version         optimisticlock.Version `gorm:"column:version"                                  json:"-"`
@@ -166,6 +168,11 @@ func (do *SoftwarePkgBasicDO) toSoftwarePkgBasicInfo() (info domain.SoftwarePkgB
 	}
 
 	info.CI.PRNum = do.CIPRNum
+
+	info.Application.Upstream, err = dp.NewURL(do.Upstream)
+	if err != nil {
+		return
+	}
 
 	info.RejectedBy, err = do.toAccounts(do.RejectedBy)
 

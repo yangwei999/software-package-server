@@ -19,6 +19,7 @@ type softwarePkgRequest struct {
 	PackageSig      string `json:"sig"             binding:"required"`
 	PackageReason   string `json:"reason"          binding:"required"`
 	PackagePlatform string `json:"platform"        binding:"required"`
+	Upstream        string `json:"upstream"        binding:"required"`
 }
 
 func (s softwarePkgRequest) toCmd(importer *domain.User) (
@@ -54,6 +55,11 @@ func (s softwarePkgRequest) toCmd(importer *domain.User) (
 	}
 
 	application.PackageDesc, err = dp.NewPackageDesc(s.PackageDesc)
+	if err != nil {
+		return
+	}
+
+	application.Upstream, err = dp.NewURL(s.Upstream)
 	if err != nil {
 		return
 	}

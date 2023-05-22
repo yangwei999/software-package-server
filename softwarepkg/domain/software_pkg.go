@@ -28,6 +28,7 @@ type SoftwarePkgApplication struct {
 	PackagePlatform   dp.PackagePlatform
 	ImportingPkgSig   dp.ImportingPkgSig
 	ReasonToImportPkg dp.ReasonToImportPkg
+	Upstream          dp.URL
 }
 
 type SoftwarePkgSourceCode struct {

@@ -12,10 +12,11 @@ import (
 )
 
 type SoftwarePkgWatchService interface {
-	HandleCreatePR(watch *domain.PkgWatch) error
+	HandleCreatePR(*domain.PkgWatch) error
 	HandleCI(*CmdToHandleCI) error
 	HandlePRMerged(*domain.PkgWatch) error
 	HandlePRClosed(*CmdToHandlePRClosed) error
+	HandleDone(*domain.PkgWatch) error
 }
 
 type softwarePkgWatchService struct {
@@ -90,6 +91,12 @@ func (s *softwarePkgWatchService) HandlePRClosed(cmd *CmdToHandlePRClosed) error
 	cmd.PkgWatch.SetPkgStatusException()
 
 	return s.watchRepo.Save(cmd.PkgWatch)
+}
+
+func (s *softwarePkgWatchService) HandleDone(pw *domain.PkgWatch) error {
+	pw.SetPkgStatusDone()
+
+	return s.watchRepo.Save(pw)
 }
 
 func (s *softwarePkgWatchService) emailContent(url string) string {

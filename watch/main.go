@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -14,7 +15,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/common/infrastructure/postgresql"
-	"github.com/opensourceways/software-package-server/softwarepkg/app"
+	"github.com/opensourceways/software-package-server/softwarepkg/domain"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
 )
 
 type options struct {
@@ -69,19 +71,27 @@ func main() {
 
 	defer kafka.Exit()
 
-	run(cfg)
+	inst := repositoryimpl.NewSoftwarePkgPR(&cfg.Postgresql.Table)
+	err = inst.Add(&domain.PkgWatch{
+		Id:     "d0e361ee-dc00-4d71-b756-32f2dc276574",
+		Status: domain.PkgStatusPRMerged,
+	})
+
+	fmt.Println(err)
+	//run(cfg)
 }
 
 func run(cfg *Config) {
-	service := app.NewSoftwarePkgInitAppService()
 
-	// watch
-	w := NewWatchingImpl(cfg, service)
-	w.Start()
-	defer w.Stop()
-
-	// wait
-	wait()
+	//service := app.NewSoftwarePkgInitAppService()
+	//
+	//// watch
+	//w := NewWatchingImpl(cfg, service)
+	//w.Start()
+	//defer w.Stop()
+	//
+	//// wait
+	//wait()
 }
 
 func wait() {

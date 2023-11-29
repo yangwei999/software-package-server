@@ -20,7 +20,7 @@ type iClient interface {
 }
 
 func NewWatchingImpl(
-	cfg *Config,
+	cfg *Watch,
 	initService app.SoftwarePkgInitAppService,
 	watchService app.SoftwarePkgWatchService,
 	r repository.Watch,
@@ -42,7 +42,7 @@ func NewWatchingImpl(
 }
 
 type WatchingImpl struct {
-	cfg            *Config
+	cfg            *Watch
 	cli            iClient
 	initAppService app.SoftwarePkgInitAppService
 	watchService   app.SoftwarePkgWatchService
@@ -90,9 +90,7 @@ func (impl *WatchingImpl) watch() {
 			logrus.Errorf("list approved pkgs failed, err: %s", err.Error())
 		}
 
-		if err = impl.watchRepo.Add(pkgIds); err != nil {
-			logrus.Errorf("add pkgIds failed, err: %s", err.Error())
-		}
+		impl.Add(pkgIds)
 
 		watchPkgs, err := impl.watchRepo.FindAll()
 		if err != nil {
@@ -153,6 +151,10 @@ func (impl *WatchingImpl) handle(pw *domain.PkgWatch) {
 		url, _ := dp.NewURL(pw.PR.Link)
 		if err = impl.initAppService.HandlePkgInitDone(pw.Id, url); err != nil {
 			logrus.Errorf("handle init done err: %s", err.Error())
+		}
+
+		if err = impl.watchService.HandleDone(pw); err != nil {
+			logrus.Errorf("handle watch done err: %s", err.Error())
 		}
 	}
 }
@@ -222,4 +224,17 @@ func (impl *WatchingImpl) isRepoExist(url string) bool {
 	code, _ := impl.httpCli.ForwardTo(request, nil)
 
 	return code == 0
+}
+
+func (impl *WatchingImpl) Add(pkdId []string) {
+	for _, id := range pkdId {
+		pw := domain.PkgWatch{
+			Id:     id,
+			Status: domain.PkgStatusInitialized,
+		}
+
+		if err := impl.watchRepo.Add(&pw); err != nil {
+			logrus.Errorf("add pkg id %s err: %s", id, err.Error())
+		}
+	}
 }

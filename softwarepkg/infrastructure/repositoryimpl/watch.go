@@ -1,70 +1,71 @@
 package repositoryimpl
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 
 	"github.com/opensourceways/software-package-server/common/infrastructure/postgresql"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
-	"github.com/opensourceways/software-package-server/softwarepkg/domain/repository"
 )
 
 type softwarePkgPR struct {
 	cli dbClient
 }
 
-func NewSoftwarePkgPR(table *Table) repository.Watch {
-	return softwarePkgPR{cli: postgresql.NewDBTable(table.SoftwarePkgPR)}
+func NewSoftwarePkgPR(table *Table) *softwarePkgPR {
+	return &softwarePkgPR{cli: postgresql.NewDBTable(table.WatchCommunityPR)}
 }
 
-func (s softwarePkgPR) Add(pkgIds []string) error {
-	var do SoftwarePkgPRDO
-	if err = s.toSoftwarePkgPRDO(p, u, &do); err != nil {
+func (s *softwarePkgPR) Add(pw *domain.PkgWatch) error {
+	u, err := uuid.Parse(pw.Id)
+	if err != nil {
 		return err
 	}
 
 	filter := SoftwarePkgPRDO{PkgId: u}
 
-	return s.cli.Insert(&filter, &do)
+	do := s.toSoftwarePkgPRDO(pw, u)
+	now := time.Now()
+	do.CreatedAt = now
+	do.UpdatedAt = now
+
+	err = s.cli.Insert(&filter, &do)
+	if s.cli.IsRowExists(err) {
+		return nil
+	}
+
+	return err
 }
 
-func (s softwarePkgPR) Save(*domain.PkgWatch) error {
-	u, err := uuid.Parse(p.Id)
+func (s *softwarePkgPR) Save(pw *domain.PkgWatch) error {
+	u, err := uuid.Parse(pw.Id)
 	if err != nil {
 		return err
 	}
 	filter := SoftwarePkgPRDO{PkgId: u}
 
-	var do SoftwarePkgPRDO
-	if err = s.toSoftwarePkgPRDO(p, u, &do); err != nil {
-		return err
-	}
+	do := s.toSoftwarePkgPRDO(pw, u)
+	do.UpdatedAt = time.Now()
 
 	return s.cli.UpdateRecord(&filter, &do)
 }
 
-func (s softwarePkgPR) FindAll() ([]*domain.PkgWatch, error) {
-	filter := SoftwarePkgPRDO{}
-
+func (s *softwarePkgPR) FindAll() ([]*domain.PkgWatch, error) {
 	var res []SoftwarePkgPRDO
-
-	if err := s.cli.GetRecords(
-		&filter,
+	err := s.cli.GetRecords(
+		[]postgresql.ColumnFilter{},
 		&res,
 		postgresql.Pagination{},
 		nil,
-	); err != nil {
+	)
+	if err != nil {
 		return nil, err
 	}
 
-	var p = make([]domain.SoftwarePkg, len(res))
-
+	var p = make([]*domain.PkgWatch, len(res))
 	for i := range res {
-		v, err := res[i].toDomainPullRequest()
-		if err != nil {
-			return nil, err
-		}
-
-		p[i] = v
+		p[i] = res[i].toDomainPkgWatch()
 	}
 
 	return p, nil

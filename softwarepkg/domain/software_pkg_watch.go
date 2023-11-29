@@ -4,6 +4,7 @@ const (
 	PkgStatusInitialized = "initialized"
 	PkgStatusPRCreated   = "pr_created"
 	PkgStatusPRMerged    = "pr_merged"
+	PkgStatusDone        = "done"
 	PkgStatusException   = "exception" // more information in the email of maintainer
 )
 
@@ -29,6 +30,10 @@ func (r *PkgWatch) SetPkgStatusPRCreated() {
 
 func (r *PkgWatch) SetPkgStatusPRMerged() {
 	r.Status = PkgStatusPRMerged
+}
+
+func (r *PkgWatch) SetPkgStatusDone() {
+	r.Status = PkgStatusDone
 }
 
 func (r *PkgWatch) SetPkgStatusException() {

@@ -19,21 +19,25 @@ type configSetDefault interface {
 }
 
 type PostgresqlConfig struct {
-	DB postgresql.Config `json:"db" required:"true"`
-	repositoryimpl.Table
+	DB    postgresql.Config    `json:"db"    required:"true"`
+	Table repositoryimpl.Table `json:"table" required:"true"`
+}
+
+type Watch struct {
+	RobotToken     string `json:"robot_token"      required:"true"`
+	PkgOrg         string `json:"pkg_org"          required:"true"`
+	CommunityOrg   string `json:"community_org"    required:"true"`
+	CommunityRepo  string `json:"community_repo"   required:"true"`
+	CISuccessLabel string `json:"ci_success_label" required:"true"`
+	CIFailureLabel string `json:"ci_failure_label" required:"true"`
+	// unit second
+	Interval int `json:"interval"`
 }
 
 type Config struct {
-	Kafka          kafka.Config     `json:"kafka"`
-	Postgresql     PostgresqlConfig `json:"postgresql"`
-	RobotToken     string           `json:"robot_token"      required:"true"`
-	PkgOrg         string           `json:"pkg_org"          required:"true"`
-	CommunityOrg   string           `json:"community_org"    required:"true"`
-	CommunityRepo  string           `json:"community_repo"   required:"true"`
-	CISuccessLabel string           `json:"ci_success_label" required:"true"`
-	CIFailureLabel string           `json:"ci_failure_label" required:"true"`
-	// unit second
-	Interval int `json:"interval"`
+	Kafka      kafka.Config     `json:"kafka"`
+	Postgresql PostgresqlConfig `json:"postgresql"`
+	Watch      Watch            `json:"watch"`
 }
 
 func loadConfig(path string) (*Config, error) {
@@ -54,16 +58,44 @@ func loadConfig(path string) (*Config, error) {
 func (cfg *Config) configItems() []interface{} {
 	return []interface{}{
 		&cfg.Kafka,
+		&cfg.Postgresql.DB,
+		&cfg.Postgresql.Table,
+		&cfg.Watch,
 	}
 }
 
 func (cfg *Config) SetDefault() {
-	if cfg.PkgOrg == "" {
-		cfg.PkgOrg = "src-openeuler"
+	items := cfg.configItems()
+	for _, i := range items {
+		if f, ok := i.(configSetDefault); ok {
+			f.SetDefault()
+		}
+	}
+}
+
+func (w *Watch) SetDefault() {
+	if w.PkgOrg == "" {
+		w.PkgOrg = "src-openeuler"
 	}
 
-	if cfg.Interval <= 0 {
-		cfg.Interval = 10
+	if w.CommunityOrg == "" {
+		w.CommunityOrg = "openeuler"
+	}
+
+	if w.CommunityRepo == "" {
+		w.CommunityRepo = "community"
+	}
+
+	if w.CISuccessLabel == "" {
+		w.CISuccessLabel = "ci_successful"
+	}
+
+	if w.CIFailureLabel == "" {
+		w.CIFailureLabel = "ci_failed"
+	}
+
+	if w.Interval <= 0 {
+		w.Interval = 10
 	}
 }
 
@@ -84,6 +116,6 @@ func (cfg *Config) Validate() error {
 	return nil
 }
 
-func (cfg *Config) IntervalDuration() time.Duration {
-	return time.Second * time.Duration(cfg.Interval)
+func (w *Watch) IntervalDuration() time.Duration {
+	return time.Second * time.Duration(w.Interval)
 }

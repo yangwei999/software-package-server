@@ -10,7 +10,7 @@ import (
 	"github.com/opensourceways/server-common-lib/utils"
 	"github.com/sirupsen/logrus"
 
-	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain"
+	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 )
 
 func (impl *pullRequestImpl) createBranch(pkg *domain.SoftwarePkg) error {
@@ -28,14 +28,14 @@ func (impl *pullRequestImpl) createBranch(pkg *domain.SoftwarePkg) error {
 	params := []string{
 		cfg.ShellScript.BranchScript,
 		impl.localRepoDir,
-		impl.branchName(pkg.Name),
-		fmt.Sprintf("sig/%s/sig-info.yaml", pkg.Application.ImportingPkgSig),
+		impl.branchName(pkg.Basic.Name.PackageName()),
+		fmt.Sprintf("sig/%s/sig-info.yaml", pkg.Sig.ImportingPkgSig()),
 		sigInfoData,
 		fmt.Sprintf(
 			"sig/%s/src-openeuler/%s/%s.yaml",
-			pkg.Application.ImportingPkgSig,
-			strings.ToLower(pkg.Name[:1]),
-			pkg.Name,
+			pkg.Sig.ImportingPkgSig(),
+			strings.ToLower(pkg.Basic.Name.PackageName()[:1]),
+			pkg.Basic.Name.PackageName(),
 		),
 		repoFile,
 	}
@@ -56,24 +56,33 @@ func (impl *pullRequestImpl) branchName(pkgName string) string {
 }
 
 func (impl *pullRequestImpl) genAppendSigInfoData(pkg *domain.SoftwarePkg) (string, error) {
-	return impl.template.genSigInfo(&sigInfoTplData{
-		PkgName:       pkg.Name,
-		ImporterEmail: pkg.Importer.Email,
-		Importer:      pkg.Importer.Name,
-	})
+	data := sigInfoTplData{
+		PkgName: pkg.Basic.Name.PackageName(),
+	}
 
+	for _, v := range pkg.Repo.Committers {
+		data.Committers = append(data.Committers, committer{
+			OpeneulerId: v.Account.Account(),
+			Name:        v.Account.Account(),
+			Email:       v.Email.Email(),
+		})
+	}
+
+	return impl.template.genSigInfo(&data)
 }
 
 func (impl *pullRequestImpl) genNewRepoFile(pkg *domain.SoftwarePkg) (string, error) {
+	pkgName := pkg.Basic.Name.PackageName()
 	f := filepath.Join(
 		impl.cfg.ShellScript.WorkDir,
-		fmt.Sprintf("%s_%s", impl.branchName(pkg.Name), pkg.Name),
+		fmt.Sprintf("%s_%s", impl.branchName(pkgName), pkgName),
 	)
 
 	err := impl.template.genRepoYaml(&repoYamlTplData{
-		PkgName:     pkg.Name,
-		PkgDesc:     fmt.Sprintf("'%s'", pkg.Application.PackageDesc),
-		Upstream:    pkg.Application.Upstream,
+		PkgName:     pkgName,
+		PkgDesc:     fmt.Sprintf("'%s'", pkg.Basic.Desc.PackageDesc()),
+		Upstream:    pkg.Basic.Upstream.URL(),
+		Platform:    pkg.Repo.Platform.PackagePlatform(),
 		BranchName:  impl.cfg.Robot.NewRepoBranch.Name,
 		ProtectType: impl.cfg.Robot.NewRepoBranch.ProtectType,
 		PublicType:  impl.cfg.Robot.NewRepoBranch.PublicType,
@@ -97,8 +106,10 @@ func (impl *pullRequestImpl) genTemplate(fileName string, data interface{}) (str
 }
 
 func (impl *pullRequestImpl) createPR(pkg *domain.SoftwarePkg) (pr domain.PullRequest, err error) {
+	pkgName := pkg.Basic.Name.PackageName()
+
 	body, err := impl.template.genPRBody(&prBodyTplData{
-		PkgName: pkg.Name,
+		PkgName: pkgName,
 		PkgLink: impl.cfg.SoftwarePkg.Endpoint + pkg.Id,
 	})
 	if err != nil {
@@ -107,10 +118,10 @@ func (impl *pullRequestImpl) createPR(pkg *domain.SoftwarePkg) (pr domain.PullRe
 
 	v, err := impl.cli.CreatePullRequest(
 		impl.cfg.CommunityRobot.Org, impl.cfg.CommunityRobot.Repo,
-		fmt.Sprintf("add eco-package: %s", pkg.Name),
+		fmt.Sprintf("add eco-package: %s", pkgName),
 		body,
 		fmt.Sprintf(
-			"%s:%s", impl.cfg.Robot.Username, impl.branchName(pkg.Name),
+			"%s:%s", impl.cfg.Robot.Username, impl.branchName(pkgName),
 		),
 		"master", true,
 	)

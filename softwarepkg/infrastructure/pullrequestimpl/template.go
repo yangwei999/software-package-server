@@ -7,15 +7,21 @@ import (
 )
 
 type sigInfoTplData struct {
-	PkgName       string
-	ImporterEmail string
-	Importer      string
+	PkgName    string
+	Committers []committer
+}
+
+type committer struct {
+	OpeneulerId string
+	Name        string
+	Email       string
 }
 
 type repoYamlTplData struct {
 	PkgName     string
 	PkgDesc     string
 	Upstream    string
+	Platform    string
 	BranchName  string
 	ProtectType string
 	PublicType  string

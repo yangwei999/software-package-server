@@ -7,7 +7,7 @@ import (
 	"github.com/opensourceways/robot-gitee-lib/client"
 	"github.com/opensourceways/server-common-lib/utils"
 
-	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain"
+	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 )
 
 func NewPullRequestImpl(cfg *Config) (*pullRequestImpl, error) {

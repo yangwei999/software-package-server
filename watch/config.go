@@ -7,6 +7,7 @@ import (
 	"github.com/opensourceways/server-common-lib/utils"
 
 	"github.com/opensourceways/software-package-server/common/infrastructure/postgresql"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pullrequestimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
 )
 
@@ -35,9 +36,10 @@ type Watch struct {
 }
 
 type Config struct {
-	Kafka      kafka.Config     `json:"kafka"`
-	Postgresql PostgresqlConfig `json:"postgresql"`
-	Watch      Watch            `json:"watch"`
+	Kafka       kafka.Config           `json:"kafka"`
+	Postgresql  PostgresqlConfig       `json:"postgresql"`
+	Watch       Watch                  `json:"watch"`
+	PullRequest pullrequestimpl.Config `json:"pull_request"`
 }
 
 func loadConfig(path string) (*Config, error) {
@@ -61,6 +63,7 @@ func (cfg *Config) configItems() []interface{} {
 		&cfg.Postgresql.DB,
 		&cfg.Postgresql.Table,
 		&cfg.Watch,
+		&cfg.PullRequest,
 	}
 }
 

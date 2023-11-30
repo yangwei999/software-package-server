@@ -21,9 +21,6 @@ func NewPackagePlatformByRepoLink(repoLink string) (PackagePlatform, error) {
 }
 
 func NewPackagePlatform(v string) (PackagePlatform, error) {
-	if !config.isValidPlatform(v) {
-		return nil, errors.New("invalid package platform")
-	}
 
 	return packagePlatform(v), nil
 }

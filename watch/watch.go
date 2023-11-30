@@ -90,7 +90,7 @@ func (impl *WatchingImpl) watch() {
 			logrus.Errorf("list approved pkgs failed, err: %s", err.Error())
 		}
 
-		impl.Add(pkgIds)
+		impl.AddToWatch(pkgIds)
 
 		watchPkgs, err := impl.watchRepo.FindAll()
 		if err != nil {
@@ -226,7 +226,7 @@ func (impl *WatchingImpl) isRepoExist(url string) bool {
 	return code == 0
 }
 
-func (impl *WatchingImpl) Add(pkdId []string) {
+func (impl *WatchingImpl) AddToWatch(pkdId []string) {
 	for _, id := range pkdId {
 		pw := domain.PkgWatch{
 			Id:     id,

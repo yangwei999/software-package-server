@@ -80,7 +80,7 @@ type initServiceTest struct {
 }
 
 func (s initServiceTest) ListApprovedPkgs() ([]string, error) {
-	return nil, nil
+	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276574"}, nil
 }
 
 func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {

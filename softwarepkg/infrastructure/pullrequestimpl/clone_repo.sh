@@ -16,7 +16,7 @@ set -e
 cd $work_dir
 
 if [ -d "$repo_name" ]; then
-    rm $repo_name
+    rm -rf $repo_name
 fi
 
 git clone --depth=1 "$clone_url"

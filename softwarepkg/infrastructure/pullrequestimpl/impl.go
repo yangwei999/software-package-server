@@ -8,6 +8,7 @@ import (
 	sdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/opensourceways/robot-gitee-lib/client"
 	"github.com/opensourceways/server-common-lib/utils"
+	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 )
@@ -53,7 +54,8 @@ func cloneRepo(cfg *Config) (string, error) {
 		cfg.CommunityRobot.RepoLink,
 	}
 
-	if _, err, _ := utils.RunCmd(params...); err != nil {
+	if output, err, _ := utils.RunCmd(params...); err != nil {
+		logrus.Errorf("run clone repo shell output: %s", string(output))
 		return "", err
 	}
 

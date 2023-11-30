@@ -44,7 +44,7 @@ func (impl *pullRequestImpl) createBranch(pkg *domain.SoftwarePkg) error {
 	if err != nil {
 		logrus.Errorf(
 			"run create pr shell, err=%s, out=%s, params=%v",
-			err.Error(), string(out), params[:len(params)-1],
+			err.Error(), string(out), params,
 		)
 	}
 

@@ -80,7 +80,7 @@ type initServiceTest struct {
 }
 
 func (s initServiceTest) ListApprovedPkgs() ([]string, error) {
-	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276574"}, nil
+	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276575"}, nil
 }
 
 func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
@@ -88,8 +88,8 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 	platform, _ := dp.NewPackagePlatform("gitee")
 	account, _ := dp.NewAccount("georgecao")
 	email, _ := dp.NewEmail("932498349@qq.com")
-	name, _ := dp.NewPackageName("aops-wawa")
-	desc, _ := dp.NewPackageDesc("i am desc")
+	name, _ := dp.NewPackageName("aops-dada")
+	desc, _ := dp.NewPackageDesc("ok: i am desc")
 	prupose, _ := dp.NewPurposeToImportPkg("i am purpose")
 	upstream, _ := dp.NewURL("https://baidu.com")
 
@@ -99,9 +99,14 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 			Email:      email,
 			PlatformId: "gitee",
 		},
+		{
+			Account:    account,
+			Email:      email,
+			PlatformId: "gitee",
+		},
 	}
 	return domain.SoftwarePkg{
-		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276574",
+		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276575",
 		Sig: sig,
 		Repo: domain.SoftwarePkgRepo{
 			Platform:   platform,
@@ -126,6 +131,25 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 					},
 					{
 						Id:   "3",
+						Pass: true,
+					},
+					{
+						Id:   "2",
+						Pass: false,
+					},
+				},
+			},
+			{
+				Reviewer: domain.Reviewer{
+					Account: account,
+				},
+				Reviews: []domain.CheckItemReviewInfo{
+					{
+						Id:   "3",
+						Pass: true,
+					},
+					{
+						Id:   "1",
 						Pass: true,
 					},
 					{

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -15,7 +14,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/common/infrastructure/postgresql"
+	"github.com/opensourceways/software-package-server/softwarepkg/app"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
+	"github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pullrequestimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
 )
 
@@ -71,27 +73,110 @@ func main() {
 
 	defer kafka.Exit()
 
-	inst := repositoryimpl.NewSoftwarePkgPR(&cfg.Postgresql.Table)
-	err = inst.Add(&domain.PkgWatch{
-		Id:     "d0e361ee-dc00-4d71-b756-32f2dc276574",
-		Status: domain.PkgStatusPRMerged,
-	})
+	run(cfg)
+}
 
-	fmt.Println(err)
-	//run(cfg)
+type initServiceTest struct {
+}
+
+func (s initServiceTest) ListApprovedPkgs() ([]string, error) {
+	return nil, nil
+}
+
+func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
+	sig, _ := dp.NewImportingPkgSig("sig-ops")
+	platform, _ := dp.NewPackagePlatform("gitee")
+	account, _ := dp.NewAccount("georgecao")
+	email, _ := dp.NewEmail("932498349@qq.com")
+	name, _ := dp.NewPackageName("aops-wawa")
+	desc, _ := dp.NewPackageDesc("i am desc")
+	prupose, _ := dp.NewPurposeToImportPkg("i am purpose")
+	upstream, _ := dp.NewURL("https://baidu.com")
+
+	commiters := []domain.PkgCommitter{
+		{
+			Account:    account,
+			Email:      email,
+			PlatformId: "gitee",
+		},
+	}
+	return domain.SoftwarePkg{
+		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276574",
+		Sig: sig,
+		Repo: domain.SoftwarePkgRepo{
+			Platform:   platform,
+			Committers: commiters,
+		},
+		Basic: domain.SoftwarePkgBasicInfo{
+			Name:     name,
+			Desc:     desc,
+			Purpose:  prupose,
+			Upstream: upstream,
+		},
+		Importer: account,
+		Reviews: []domain.UserReview{
+			{
+				Reviewer: domain.Reviewer{
+					Account: account,
+				},
+				Reviews: []domain.CheckItemReviewInfo{
+					{
+						Id:   "1",
+						Pass: true,
+					},
+					{
+						Id:   "3",
+						Pass: true,
+					},
+					{
+						Id:   "2",
+						Pass: false,
+					},
+				},
+			},
+		},
+	}, nil
+}
+
+func (s initServiceTest) HandlePkgInitDone(pkgId string, pr dp.URL) error {
+	return nil
+}
+
+func (s initServiceTest) HandlePkgInitStarted(pkgId string, pr dp.URL) error {
+	return nil
+}
+
+func (s initServiceTest) HandlePkgAlreadyExisted(pkgId string, repoLink string) error {
+	return nil
+}
+
+func (s initServiceTest) Send(subject, content string) error {
+	return nil
 }
 
 func run(cfg *Config) {
+	pullRequestImpl, err := pullrequestimpl.NewPullRequestImpl(&cfg.PullRequest)
+	if err != nil {
+		logrus.Errorf("new pull request impl err:%s", err.Error())
 
-	//service := app.NewSoftwarePkgInitAppService()
-	//
-	//// watch
-	//w := NewWatchingImpl(cfg, service)
-	//w.Start()
-	//defer w.Stop()
-	//
-	//// wait
-	//wait()
+		return
+	}
+
+	initService := new(initServiceTest)
+
+	watchRepo := repositoryimpl.NewSoftwarePkgPR(&cfg.Postgresql.Table)
+
+	//email := emailimpl.NewEmailService(cfg.Email)
+
+	watchService := app.NewWatchService(pullRequestImpl, watchRepo, initService)
+
+	// watch
+	w := NewWatchingImpl(&cfg.Watch, initService, watchService, watchRepo)
+	w.Start()
+	defer w.Stop()
+
+	// wait
+	wait()
 }
 
 func wait() {

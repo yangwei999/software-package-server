@@ -7,6 +7,7 @@ import (
 	"github.com/opensourceways/server-common-lib/utils"
 
 	"github.com/opensourceways/software-package-server/common/infrastructure/postgresql"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/emailimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pullrequestimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
 )
@@ -40,6 +41,7 @@ type Config struct {
 	Postgresql  PostgresqlConfig       `json:"postgresql"`
 	Watch       Watch                  `json:"watch"`
 	PullRequest pullrequestimpl.Config `json:"pull_request"`
+	Email       emailimpl.Config       `json:"email"`
 }
 
 func loadConfig(path string) (*Config, error) {

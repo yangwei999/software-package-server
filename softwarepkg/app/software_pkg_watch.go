@@ -19,6 +19,14 @@ type SoftwarePkgWatchService interface {
 	HandleDone(*domain.PkgWatch) error
 }
 
+func NewWatchService(pr pullrequest.PullRequest, r repository.Watch, e email.Email) *softwarePkgWatchService {
+	return &softwarePkgWatchService{
+		prCli:     pr,
+		watchRepo: r,
+		email:     e,
+	}
+}
+
 type softwarePkgWatchService struct {
 	prCli     pullrequest.PullRequest
 	watchRepo repository.Watch

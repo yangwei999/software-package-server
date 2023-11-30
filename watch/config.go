@@ -27,7 +27,6 @@ type PostgresqlConfig struct {
 
 type Watch struct {
 	RobotToken     string `json:"robot_token"      required:"true"`
-	PkgOrg         string `json:"pkg_org"          required:"true"`
 	CommunityOrg   string `json:"community_org"    required:"true"`
 	CommunityRepo  string `json:"community_repo"   required:"true"`
 	CISuccessLabel string `json:"ci_success_label" required:"true"`
@@ -79,10 +78,6 @@ func (cfg *Config) SetDefault() {
 }
 
 func (w *Watch) SetDefault() {
-	if w.PkgOrg == "" {
-		w.PkgOrg = "src-openeuler"
-	}
-
 	if w.CommunityOrg == "" {
 		w.CommunityOrg = "openeuler"
 	}

@@ -48,6 +48,8 @@ func (s *softwarePkgWatchService) HandleCreatePR(watchPkg *domain.PkgWatch) erro
 func (s *softwarePkgWatchService) HandleCI(cmd *CmdToHandleCI) error {
 	if cmd.IsSuccess {
 		if err := s.mergePR(cmd.PkgWatch); err != nil {
+			logrus.Errorf("merge pr %d failed: %s", cmd.PR.Num, err.Error())
+
 			return s.notifyException(cmd.PkgWatch, err.Error())
 		}
 	} else {

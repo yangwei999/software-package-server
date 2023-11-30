@@ -53,7 +53,8 @@ func cloneRepo(cfg *Config) (string, error) {
 		cfg.CommunityRobot.RepoLink,
 	}
 
-	if _, err, _ := utils.RunCmd(params...); err != nil {
+	if out, err, _ := utils.RunCmd(params...); err != nil {
+		fmt.Println(string(out))
 		return "", err
 	}
 

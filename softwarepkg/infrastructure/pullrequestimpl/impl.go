@@ -155,7 +155,7 @@ func (impl *pullRequestImpl) genTableHead(reviews domain.Reviews) string {
 	sort.Sort(reviews)
 	for _, v := range reviews {
 		headName += fmt.Sprintf("| %s ", v.Id)
-		separator += separator
+		separator += "| ---- "
 	}
 
 	return fmt.Sprintf("%s |\n%s |\n", headName, separator)

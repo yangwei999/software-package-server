@@ -11,7 +11,6 @@ const (
 type PkgWatch struct {
 	Id     string
 	Status string
-	Pkg    SoftwarePkg
 	PR     PullRequest
 }
 

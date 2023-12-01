@@ -4,12 +4,15 @@ import (
 	"time"
 
 	kafka "github.com/opensourceways/kafka-lib/agent"
+	mongdblib "github.com/opensourceways/mongodb-lib/mongodblib"
 	"github.com/opensourceways/server-common-lib/utils"
 
 	"github.com/opensourceways/software-package-server/common/infrastructure/postgresql"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/emailimpl"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pkgmanagerimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pullrequestimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/softwarepkgadapter"
 )
 
 type configValidate interface {
@@ -35,12 +38,24 @@ type Watch struct {
 	Interval int `json:"interval"`
 }
 
+type mongoConfig struct {
+	DB          mongdblib.Config               `json:"db"`
+	Collections softwarepkgadapter.Collections `json:"collections"`
+}
+
+type Topics struct {
+	SoftwarePkgInitialized string `json:"software_pkg_initialized" required:"true"`
+}
+
 type Config struct {
 	Kafka       kafka.Config           `json:"kafka"`
 	Postgresql  PostgresqlConfig       `json:"postgresql"`
 	Watch       Watch                  `json:"watch"`
 	PullRequest pullrequestimpl.Config `json:"pull_request"`
 	Email       emailimpl.Config       `json:"email"`
+	Mongo       mongoConfig            `json:"mongo"`
+	PkgManager  pkgmanagerimpl.Config  `json:"pkg_manager"`
+	Topics      Topics                 `json:"topics"`
 }
 
 func loadConfig(path string) (*Config, error) {
@@ -65,6 +80,9 @@ func (cfg *Config) configItems() []interface{} {
 		&cfg.Postgresql.Table,
 		&cfg.Watch,
 		&cfg.PullRequest,
+		&cfg.Mongo.DB,
+		&cfg.Mongo.Collections,
+		&cfg.PkgManager,
 	}
 }
 

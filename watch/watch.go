@@ -12,7 +12,6 @@ import (
 	"github.com/opensourceways/software-package-server/softwarepkg/app"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
-	"github.com/opensourceways/software-package-server/softwarepkg/domain/repository"
 )
 
 type iClient interface {
@@ -23,7 +22,6 @@ func NewWatchingImpl(
 	cfg *Watch,
 	initService app.SoftwarePkgInitAppService,
 	watchService app.SoftwarePkgWatchService,
-	r repository.Watch,
 ) *WatchingImpl {
 	cli := client.NewClient(func() []byte {
 		return []byte(cfg.RobotToken)
@@ -34,7 +32,6 @@ func NewWatchingImpl(
 		cli:            cli,
 		initAppService: initService,
 		watchService:   watchService,
-		watchRepo:      r,
 		httpCli:        utils.NewHttpClient(3),
 		stop:           make(chan struct{}),
 		stopped:        make(chan struct{}),
@@ -46,7 +43,6 @@ type WatchingImpl struct {
 	cli            iClient
 	initAppService app.SoftwarePkgInitAppService
 	watchService   app.SoftwarePkgWatchService
-	watchRepo      repository.Watch
 	httpCli        utils.HttpClient
 	stop           chan struct{}
 	stopped        chan struct{}
@@ -92,7 +88,7 @@ func (impl *WatchingImpl) watch() {
 
 		impl.AddToWatch(pkgIds)
 
-		watchPkgs, err := impl.watchRepo.FindAll()
+		watchPkgs, err := impl.watchService.FindPkgWatch()
 		if err != nil {
 			logrus.Errorf("find watch pkg failed, err: %s", err.Error())
 		}
@@ -129,11 +125,9 @@ func (impl *WatchingImpl) handle(pw *domain.PkgWatch) {
 		return
 	}
 
-	pw.Pkg = pkg
-
 	switch pw.Status {
 	case domain.PkgStatusInitialized:
-		if err = impl.watchService.HandleCreatePR(pw); err != nil {
+		if err = impl.watchService.HandleCreatePR(pw, &pkg); err != nil {
 			logrus.Errorf("handle create pr err: %s", err.Error())
 
 			return
@@ -144,7 +138,7 @@ func (impl *WatchingImpl) handle(pw *domain.PkgWatch) {
 			logrus.Errorf("handle init started err: %s", err.Error())
 		}
 	case domain.PkgStatusPRCreated:
-		if err = impl.handlePR(pw); err != nil {
+		if err = impl.handlePR(pw, &pkg); err != nil {
 			logrus.Errorf("handle pr err: %s", err.Error())
 		}
 	case domain.PkgStatusPRMerged:
@@ -159,7 +153,7 @@ func (impl *WatchingImpl) handle(pw *domain.PkgWatch) {
 	}
 }
 
-func (impl *WatchingImpl) handlePR(pw *domain.PkgWatch) error {
+func (impl *WatchingImpl) handlePR(pw *domain.PkgWatch, pkg *domain.SoftwarePkg) error {
 	pr, err := impl.cli.GetGiteePullRequest(impl.cfg.CommunityOrg,
 		impl.cfg.CommunityRepo, int32(pw.PR.Num))
 	if err != nil {
@@ -167,13 +161,13 @@ func (impl *WatchingImpl) handlePR(pw *domain.PkgWatch) error {
 	}
 
 	if pr.State == sdk.StatusOpen {
-		return impl.handleCILabel(pw, pr)
+		return impl.handleCILabel(pw, pr, pkg)
 	}
 
 	return impl.handlePRState(pr, pw)
 }
 
-func (impl *WatchingImpl) handleCILabel(pw *domain.PkgWatch, pr sdk.PullRequest) error {
+func (impl *WatchingImpl) handleCILabel(pw *domain.PkgWatch, pr sdk.PullRequest, pkg *domain.SoftwarePkg) error {
 	cmd := app.CmdToHandleCI{
 		PkgWatch: pw,
 	}
@@ -189,7 +183,7 @@ func (impl *WatchingImpl) handleCILabel(pw *domain.PkgWatch, pr sdk.PullRequest)
 				logrus.Errorf("handle ci err: %s", err.Error())
 			}
 
-			url := pw.Pkg.Repo.Platform.RepoLink(pw.Pkg.Basic.Name)
+			url := pkg.Repo.Platform.RepoLink(pkg.Basic.Name)
 			if !impl.isRepoExist(url) {
 				return nil
 			}
@@ -233,7 +227,7 @@ func (impl *WatchingImpl) AddToWatch(pkdId []string) {
 			Status: domain.PkgStatusInitialized,
 		}
 
-		if err := impl.watchRepo.Add(&pw); err != nil {
+		if err := impl.watchService.AddPkgWatch(&pw); err != nil {
 			logrus.Errorf("add pkg id %s err: %s", id, err.Error())
 		}
 	}

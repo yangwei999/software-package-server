@@ -12,7 +12,9 @@ import (
 )
 
 type SoftwarePkgWatchService interface {
-	HandleCreatePR(*domain.PkgWatch) error
+	AddPkgWatch(*domain.PkgWatch) error
+	FindPkgWatch() ([]*domain.PkgWatch, error)
+	HandleCreatePR(*domain.PkgWatch, *domain.SoftwarePkg) error
 	HandleCI(*CmdToHandleCI) error
 	HandlePRMerged(*domain.PkgWatch) error
 	HandlePRClosed(*CmdToHandlePRClosed) error
@@ -33,8 +35,16 @@ type softwarePkgWatchService struct {
 	email     email.Email
 }
 
-func (s *softwarePkgWatchService) HandleCreatePR(watchPkg *domain.PkgWatch) error {
-	pr, err := s.prCli.Create(&watchPkg.Pkg)
+func (s *softwarePkgWatchService) AddPkgWatch(pw *domain.PkgWatch) error {
+	return s.watchRepo.Add(pw)
+}
+
+func (s *softwarePkgWatchService) FindPkgWatch() ([]*domain.PkgWatch, error) {
+	return s.watchRepo.FindAll()
+}
+
+func (s *softwarePkgWatchService) HandleCreatePR(watchPkg *domain.PkgWatch, pkg *domain.SoftwarePkg) error {
+	pr, err := s.prCli.Create(pkg)
 	if err != nil {
 		return err
 	}

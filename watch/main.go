@@ -17,6 +17,8 @@ import (
 	"github.com/opensourceways/software-package-server/softwarepkg/app"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/emailimpl"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pkgmanagerimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pullrequestimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
 )
@@ -80,7 +82,7 @@ type initServiceTest struct {
 }
 
 func (s initServiceTest) ListApprovedPkgs() ([]string, error) {
-	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276575"}, nil
+	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276576"}, nil
 }
 
 func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
@@ -88,7 +90,7 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 	platform, _ := dp.NewPackagePlatform("gitee")
 	account, _ := dp.NewAccount("georgecao")
 	email, _ := dp.NewEmail("932498349@qq.com")
-	name, _ := dp.NewPackageName("aops-dada")
+	name, _ := dp.NewPackageName("aops-sasa")
 	desc, _ := dp.NewPackageDesc("ok: i am desc")
 	prupose, _ := dp.NewPurposeToImportPkg("i am purpose")
 	upstream, _ := dp.NewURL("https://baidu.com")
@@ -106,7 +108,7 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 		},
 	}
 	return domain.SoftwarePkg{
-		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276575",
+		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276576",
 		Sig: sig,
 		Repo: domain.SoftwarePkgRepo{
 			Platform:   platform,
@@ -126,15 +128,15 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 				},
 				Reviews: []domain.CheckItemReviewInfo{
 					{
+						Id:   "2",
+						Pass: true,
+					},
+					{
 						Id:   "1",
 						Pass: true,
 					},
 					{
 						Id:   "3",
-						Pass: true,
-					},
-					{
-						Id:   "2",
 						Pass: false,
 					},
 				},
@@ -186,16 +188,22 @@ func run(cfg *Config) {
 		return
 	}
 
+	if err = pkgmanagerimpl.Init(&cfg.PkgManager); err != nil {
+		logrus.Errorf("init pkg manager failed, err:%s", err.Error())
+
+		return
+	}
+
 	initService := new(initServiceTest)
 
-	watchRepo := repositoryimpl.NewSoftwarePkgPR(&cfg.Postgresql.Table)
-
-	//email := emailimpl.NewEmailService(cfg.Email)
-
-	watchService := app.NewWatchService(pullRequestImpl, watchRepo, initService)
+	watchService := app.NewWatchService(
+		pullRequestImpl,
+		repositoryimpl.NewSoftwarePkgPR(&cfg.Postgresql.Table),
+		emailimpl.NewEmailService(cfg.Email),
+	)
 
 	// watch
-	w := NewWatchingImpl(&cfg.Watch, initService, watchService, watchRepo)
+	w := NewWatchingImpl(&cfg.Watch, initService, watchService)
 	w.Start()
 	defer w.Stop()
 

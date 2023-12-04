@@ -77,7 +77,7 @@ func newTemplateImpl(cfg *templateConfig) (templateImpl, error) {
 		return r, err
 	}
 
-	tmpl, err = template.ParseFiles(cfg.ReviewDetail)
+	tmpl, err = template.ParseFiles(cfg.ReviewDetailTpl)
 	if err != nil {
 		return r, nil
 	}

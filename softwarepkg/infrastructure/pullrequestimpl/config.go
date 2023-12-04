@@ -102,11 +102,11 @@ func (cfg *newRepoBranch) setDefault() {
 }
 
 type templateConfig struct {
-	PRBodyTpl     string `json:"pr_body_tpl"`
-	SigInfoTpl    string `json:"sig_info_tpl"`
-	RepoYamlTpl   string `json:"repo_yaml_tpl"`
-	CheckItemsTpl string `json:"check_items_tpl"`
-	ReviewDetail  string `json:"review_detail_tpl"`
+	PRBodyTpl       string `json:"pr_body_tpl"`
+	SigInfoTpl      string `json:"sig_info_tpl"`
+	RepoYamlTpl     string `json:"repo_yaml_tpl"`
+	CheckItemsTpl   string `json:"check_items_tpl"`
+	ReviewDetailTpl string `json:"review_detail_tpl"`
 }
 
 func (t *templateConfig) setDefault() {
@@ -123,11 +123,11 @@ func (t *templateConfig) setDefault() {
 	}
 
 	if t.CheckItemsTpl == "" {
-		t.RepoYamlTpl = "/opt/app/template/check_items.tpl"
+		t.CheckItemsTpl = "/opt/app/template/check_items.tpl"
 	}
 
-	if t.ReviewDetail == "" {
-		t.ReviewDetail = "/opt/app/template/review_detail.tpl"
+	if t.ReviewDetailTpl == "" {
+		t.ReviewDetailTpl = "/opt/app/template/review_detail.tpl"
 	}
 }
 

@@ -1,9 +1,7 @@
 package pullrequestimpl
 
 import (
-	"fmt"
 	"path/filepath"
-	"sort"
 
 	sdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/opensourceways/robot-gitee-lib/client"
@@ -27,7 +25,7 @@ func NewPullRequestImpl(cfg *Config) (*pullRequestImpl, error) {
 		return []byte(cfg.CommunityRobot.Token)
 	})
 
-	tmpl, err := newtemplateImpl(&cfg.Template)
+	tmpl, err := newTemplateImpl(&cfg.Template)
 	if err != nil {
 		return nil, err
 	}
@@ -91,10 +89,7 @@ func (impl *pullRequestImpl) Create(pkg *domain.SoftwarePkg) (pr domain.PullRequ
 		return
 	}
 
-	comment := impl.genReviewComment(pkg)
-	if comment != "" {
-		impl.Comment(pr.Num, comment)
-	}
+	impl.addReviewComment(pkg, pr.Num)
 
 	return
 }
@@ -135,51 +130,4 @@ func (impl *pullRequestImpl) Close(prNum int) error {
 	}
 
 	return impl.cli.ClosePR(org, repo, int32(prNum))
-}
-
-func (impl *pullRequestImpl) Comment(prNum int, content string) error {
-	return impl.cli.CreatePRComment(
-		impl.cfg.CommunityRobot.Org, impl.cfg.CommunityRobot.Repo,
-		int32(prNum), content,
-	)
-}
-
-func (impl *pullRequestImpl) genReviewComment(pkg *domain.SoftwarePkg) string {
-	if len(pkg.Reviews) == 0 {
-		return ""
-	}
-
-	return impl.genTableHead(pkg.Reviews[0].Reviews) + impl.genTableBody(pkg)
-}
-
-func (impl *pullRequestImpl) genTableHead(reviews domain.Reviews) string {
-	headName := "| reviewer "
-	separator := "| ---- "
-
-	sort.Sort(reviews)
-	for _, v := range reviews {
-		headName += fmt.Sprintf("| %s ", v.Id)
-		separator += "| ---- "
-	}
-
-	return fmt.Sprintf("%s |\n%s |\n", headName, separator)
-}
-
-func (impl *pullRequestImpl) genTableBody(pkg *domain.SoftwarePkg) string {
-	var body string
-
-	for _, v := range pkg.Reviews {
-		t := fmt.Sprintf("| %s", v.Account.Account())
-
-		sort.Sort(v.Reviews)
-		for _, item := range v.Reviews {
-			t += fmt.Sprintf("| %v", item.Pass)
-		}
-
-		t += "|\n"
-
-		body += t
-	}
-
-	return body
 }

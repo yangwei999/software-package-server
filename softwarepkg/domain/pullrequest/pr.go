@@ -7,5 +7,4 @@ type PullRequest interface {
 	Update(*domain.SoftwarePkg) error
 	Merge(int) error
 	Close(int) error
-	Comment(int, string) error
 }

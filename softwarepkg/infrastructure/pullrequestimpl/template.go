@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"io/ioutil"
 	"text/template"
+
+	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 )
 
 type sigInfoTplData struct {
@@ -32,7 +34,20 @@ type prBodyTplData struct {
 	PkgLink string
 }
 
-func newtemplateImpl(cfg *templateConfig) (templateImpl, error) {
+type reviewDetailTplData struct {
+	Reviewer   string
+	CheckItems []*checkItem
+}
+
+type checkItem struct {
+	Id      string
+	Name    string
+	Desc    string
+	Result  string
+	Comment string
+}
+
+func newTemplateImpl(cfg *templateConfig) (templateImpl, error) {
 	r := templateImpl{}
 
 	// pr body
@@ -56,13 +71,26 @@ func newtemplateImpl(cfg *templateConfig) (templateImpl, error) {
 	}
 	r.sigInfoTpl = tmpl
 
+	// check items
+	tmpl, err = template.ParseFiles(cfg.CheckItemsTpl)
+	if err != nil {
+		return r, err
+	}
+
+	tmpl, err = template.ParseFiles(cfg.ReviewDetailTpl)
+	if err != nil {
+		return r, nil
+	}
+
 	return r, nil
 }
 
 type templateImpl struct {
-	prBodyTpl   *template.Template
-	sigInfoTpl  *template.Template
-	repoYamlTpl *template.Template
+	prBodyTpl       *template.Template
+	sigInfoTpl      *template.Template
+	repoYamlTpl     *template.Template
+	checkItemsTpl   *template.Template
+	reviewDetailTpl *template.Template
 }
 
 func (impl *templateImpl) genPRBody(data *prBodyTplData) (string, error) {
@@ -81,6 +109,14 @@ func (impl *templateImpl) genRepoYaml(data *repoYamlTplData, f string) error {
 	}
 
 	return ioutil.WriteFile(f, buf.Bytes(), 0644)
+}
+
+func (impl *templateImpl) genCheckItems(data *domain.Config) (string, error) {
+	return impl.gen(impl.checkItemsTpl, data)
+}
+
+func (impl *templateImpl) genReviewDetail(data *reviewDetailTplData) (string, error) {
+	return impl.gen(impl.reviewDetailTpl, data)
 }
 
 func (impl *templateImpl) gen(tpl *template.Template, data interface{}) (string, error) {

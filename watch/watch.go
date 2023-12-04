@@ -160,6 +160,11 @@ func (impl *WatchingImpl) handlePR(pw *domain.PkgWatch, pkg *domain.SoftwarePkg)
 		return err
 	}
 
+	//When a conflict occurs, force a push on the original branch
+	if !pr.Mergeable {
+		return impl.watchService.HandleUpdatePR(pkg)
+	}
+
 	if pr.State == sdk.StatusOpen {
 		return impl.handleCILabel(pw, pr, pkg)
 	}

@@ -82,7 +82,7 @@ type initServiceTest struct {
 }
 
 func (s initServiceTest) ListApprovedPkgs() ([]string, error) {
-	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276576"}, nil
+	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276582"}, nil
 }
 
 func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
@@ -90,10 +90,11 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 	platform, _ := dp.NewPackagePlatform("gitee")
 	account, _ := dp.NewAccount("georgecao")
 	email, _ := dp.NewEmail("932498349@qq.com")
-	name, _ := dp.NewPackageName("aops-sasa")
+	name, _ := dp.NewPackageName("yaya")
 	desc, _ := dp.NewPackageDesc("ok: i am desc")
 	prupose, _ := dp.NewPurposeToImportPkg("i am purpose")
 	upstream, _ := dp.NewURL("https://baidu.com")
+	comment, _ := dp.NewReviewComment("i am comment")
 
 	commiters := []domain.PkgCommitter{
 		{
@@ -108,7 +109,7 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 		},
 	}
 	return domain.SoftwarePkg{
-		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276576",
+		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276582",
 		Sig: sig,
 		Repo: domain.SoftwarePkgRepo{
 			Platform:   platform,
@@ -128,15 +129,16 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 				},
 				Reviews: []domain.CheckItemReviewInfo{
 					{
-						Id:   "2",
+						Id:      "2",
+						Pass:    true,
+						Comment: comment,
+					},
+					{
+						Id:   "6",
 						Pass: true,
 					},
 					{
-						Id:   "1",
-						Pass: true,
-					},
-					{
-						Id:   "3",
+						Id:   "4",
 						Pass: false,
 					},
 				},
@@ -147,15 +149,17 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 				},
 				Reviews: []domain.CheckItemReviewInfo{
 					{
-						Id:   "3",
-						Pass: true,
+						Id:      "7",
+						Pass:    true,
+						Comment: comment,
 					},
 					{
-						Id:   "1",
-						Pass: true,
+						Id:      "1",
+						Pass:    true,
+						Comment: comment,
 					},
 					{
-						Id:   "2",
+						Id:   "5",
 						Pass: false,
 					},
 				},

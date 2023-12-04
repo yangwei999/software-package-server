@@ -36,7 +36,9 @@ func (impl *pullRequestImpl) createReviewDetailComment(review *domain.UserReview
 	for _, v := range review.Reviews {
 		if item := impl.findCheckItem(v.Id); item != nil {
 			item.Result = fmt.Sprintf("%v", v.Pass)
-			item.Comment = v.Comment.ReviewComment()
+			if v.Comment != nil {
+				item.Comment = v.Comment.ReviewComment()
+			}
 			items = append(items, item)
 		}
 	}

@@ -3,6 +3,8 @@ package pullrequestimpl
 import (
 	"fmt"
 	"strings"
+
+	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 )
 
 type Config struct {
@@ -11,6 +13,7 @@ type Config struct {
 	SoftwarePkg    softwarePkg          `json:"software_pkg"`
 	ShellScript    shellConfig          `json:"shell_script"`
 	CommunityRobot communityRobotConfig `json:"community_robot"`
+	*domain.Config
 }
 
 func (cfg *Config) SetDefault() {
@@ -99,9 +102,11 @@ func (cfg *newRepoBranch) setDefault() {
 }
 
 type templateConfig struct {
-	PRBodyTpl   string `json:"pr_body_tpl"`
-	SigInfoTpl  string `json:"sig_info_tpl"`
-	RepoYamlTpl string `json:"repo_yaml_tpl"`
+	PRBodyTpl       string `json:"pr_body_tpl"`
+	SigInfoTpl      string `json:"sig_info_tpl"`
+	RepoYamlTpl     string `json:"repo_yaml_tpl"`
+	CheckItemsTpl   string `json:"check_items_tpl"`
+	ReviewDetailTpl string `json:"review_detail_tpl"`
 }
 
 func (t *templateConfig) setDefault() {
@@ -115,6 +120,14 @@ func (t *templateConfig) setDefault() {
 
 	if t.RepoYamlTpl == "" {
 		t.RepoYamlTpl = "/opt/app/template/repo_yaml.tpl"
+	}
+
+	if t.CheckItemsTpl == "" {
+		t.CheckItemsTpl = "/opt/app/template/check_items.tpl"
+	}
+
+	if t.ReviewDetailTpl == "" {
+		t.ReviewDetailTpl = "/opt/app/template/review_detail.tpl"
 	}
 }
 

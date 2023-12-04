@@ -1,13 +1,17 @@
 package pullrequestimpl
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 )
+
+var checkItemResult = map[bool]string{
+	true:  "通过",
+	false: "不通过",
+}
 
 func (impl *pullRequestImpl) addReviewComment(pkg *domain.SoftwarePkg, prNum int) {
 	if err := impl.createCheckItemsComment(prNum); err != nil {
@@ -33,14 +37,19 @@ func (impl *pullRequestImpl) createCheckItemsComment(prNum int) error {
 func (impl *pullRequestImpl) createReviewDetailComment(review *domain.UserReview, prNUm int) error {
 	sort.Sort(review.Reviews)
 	var items []*checkItem
+
 	for _, v := range review.Reviews {
-		if item := impl.findCheckItem(v.Id); item != nil {
-			item.Result = fmt.Sprintf("%v", v.Pass)
-			if v.Comment != nil {
-				item.Comment = v.Comment.ReviewComment()
-			}
-			items = append(items, item)
+		item := impl.findCheckItem(v.Id)
+		if item == nil {
+			continue
 		}
+
+		item.Result = checkItemResult[v.Pass]
+		if v.Comment != nil {
+			item.Comment = v.Comment.ReviewComment()
+		}
+
+		items = append(items, item)
 	}
 
 	body, err := impl.template.genReviewDetail(&reviewDetailTplData{

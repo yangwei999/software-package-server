@@ -99,6 +99,10 @@ func (impl *pullRequestImpl) Create(pkg *domain.SoftwarePkg) (pr domain.PullRequ
 	return
 }
 
+func (impl *pullRequestImpl) Update(pkg *domain.SoftwarePkg) error {
+	return impl.createBranch(pkg)
+}
+
 func (impl *pullRequestImpl) Merge(prNum int) error {
 	org := impl.cfg.CommunityRobot.Org
 	repo := impl.cfg.CommunityRobot.Repo

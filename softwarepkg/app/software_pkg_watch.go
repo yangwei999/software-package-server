@@ -15,6 +15,7 @@ type SoftwarePkgWatchService interface {
 	AddPkgWatch(*domain.PkgWatch) error
 	FindPkgWatch() ([]*domain.PkgWatch, error)
 	HandleCreatePR(*domain.PkgWatch, *domain.SoftwarePkg) error
+	HandleUpdatePR(*domain.SoftwarePkg) error
 	HandleCI(*CmdToHandleCI) error
 	HandlePRMerged(*domain.PkgWatch) error
 	HandlePRClosed(*CmdToHandlePRClosed) error
@@ -53,6 +54,10 @@ func (s *softwarePkgWatchService) HandleCreatePR(watchPkg *domain.PkgWatch, pkg 
 	watchPkg.SetPkgStatusPRCreated()
 
 	return s.watchRepo.Save(watchPkg)
+}
+
+func (s *softwarePkgWatchService) HandleUpdatePR(pkg *domain.SoftwarePkg) error {
+	return s.prCli.Update(pkg)
 }
 
 func (s *softwarePkgWatchService) HandleCI(cmd *CmdToHandleCI) error {

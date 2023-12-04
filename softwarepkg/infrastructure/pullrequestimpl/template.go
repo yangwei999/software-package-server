@@ -76,11 +76,13 @@ func newTemplateImpl(cfg *templateConfig) (templateImpl, error) {
 	if err != nil {
 		return r, err
 	}
+	r.checkItemsTpl = tmpl
 
 	tmpl, err = template.ParseFiles(cfg.ReviewDetailTpl)
 	if err != nil {
 		return r, nil
 	}
+	r.reviewDetailTpl = tmpl
 
 	return r, nil
 }

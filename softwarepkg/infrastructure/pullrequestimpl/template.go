@@ -78,6 +78,7 @@ func newTemplateImpl(cfg *templateConfig) (templateImpl, error) {
 	}
 	r.checkItemsTpl = tmpl
 
+	// review detail
 	tmpl, err = template.ParseFiles(cfg.ReviewDetailTpl)
 	if err != nil {
 		return r, nil

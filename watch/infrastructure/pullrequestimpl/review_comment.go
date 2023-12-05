@@ -1,6 +1,9 @@
 package pullrequestimpl
 
 import (
+	"sort"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
@@ -35,7 +38,10 @@ func (impl *pullRequestImpl) createCheckItemsComment(prNum int) error {
 func (impl *pullRequestImpl) createReviewDetailComment(review *domain.UserReview, prNUm int) error {
 	var items []*checkItem
 
-	for _, v := range review.Reviews {
+	var localReviews Reviews = review.Reviews
+	sort.Sort(localReviews)
+
+	for _, v := range localReviews {
 		item := impl.findCheckItem(v.Id)
 		if item == nil {
 			continue
@@ -79,4 +85,20 @@ func (impl *pullRequestImpl) comment(prNum int, content string) error {
 		impl.cfg.CommunityRobot.Org, impl.cfg.CommunityRobot.Repo,
 		int32(prNum), content,
 	)
+}
+
+type Reviews []domain.CheckItemReviewInfo
+
+func (r Reviews) Len() int {
+	return len(r)
+}
+
+func (r Reviews) Less(i, j int) bool {
+	t := strings.Compare(r[i].Id, r[j].Id)
+
+	return t == -1
+}
+
+func (r Reviews) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
 }

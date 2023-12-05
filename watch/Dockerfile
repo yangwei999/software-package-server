@@ -20,9 +20,9 @@ RUN dnf -y update && \
     mkdir /opt/app -p && chmod 700 /opt/app && chown watch:watch /opt/app
 
 COPY --chown=watch --from=BUILDER /go/src/github.com/opensourceways/software-package-watch/watch/watch /opt/app/watch
-COPY --chown=watch softwarepkg/infrastructure/pullrequestimpl/create_branch.sh /opt/app/create_branch.sh
-COPY --chown=watch softwarepkg/infrastructure/pullrequestimpl/clone_repo.sh /opt/app/clone_repo.sh
-COPY --chown=watch softwarepkg/infrastructure/template /opt/app/template
+COPY --chown=watch watch/infrastructure/pullrequestimpl/create_branch.sh /opt/app/create_branch.sh
+COPY --chown=watch watch/infrastructure/pullrequestimpl/clone_repo.sh /opt/app/clone_repo.sh
+COPY --chown=watch watch/infrastructure/template /opt/app/template
 
 RUN chmod 550 /opt/app/watch /opt/app/create_branch.sh /opt/app/clone_repo.sh
 

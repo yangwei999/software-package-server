@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/opensourceways/software-package-server/softwarepkg/domain"
+import "github.com/opensourceways/software-package-server/watch/domain"
 
 type Watch interface {
 	Add(pw *domain.PkgWatch) error

@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
+	watchdomain "github.com/opensourceways/software-package-server/watch/domain"
 )
 
 func NewPullRequestImpl(cfg *Config) (*pullRequestImpl, error) {
@@ -79,7 +80,7 @@ type pullRequestImpl struct {
 	localRepoDir string
 }
 
-func (impl *pullRequestImpl) Create(pkg *domain.SoftwarePkg) (pr domain.PullRequest, err error) {
+func (impl *pullRequestImpl) Create(pkg *domain.SoftwarePkg) (pr watchdomain.PullRequest, err error) {
 	if err = impl.createBranch(pkg); err != nil {
 		return
 	}

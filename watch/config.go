@@ -8,11 +8,12 @@ import (
 	"github.com/opensourceways/server-common-lib/utils"
 
 	"github.com/opensourceways/software-package-server/common/infrastructure/postgresql"
-	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/emailimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pkgmanagerimpl"
-	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pullrequestimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/softwarepkgadapter"
+	"github.com/opensourceways/software-package-server/watch/infrastructure/emailimpl"
+	"github.com/opensourceways/software-package-server/watch/infrastructure/pullrequestimpl"
+	watchrepoimpl "github.com/opensourceways/software-package-server/watch/infrastructure/repositoryimpl"
 )
 
 type configValidate interface {
@@ -24,8 +25,9 @@ type configSetDefault interface {
 }
 
 type PostgresqlConfig struct {
-	DB    postgresql.Config    `json:"db"    required:"true"`
-	Table repositoryimpl.Table `json:"table" required:"true"`
+	DB         postgresql.Config    `json:"db"          required:"true"`
+	Table      repositoryimpl.Table `json:"table"       required:"true"`
+	WatchTable watchrepoimpl.Table  `json:"watch_table" require:"true"`
 }
 
 type Watch struct {

@@ -16,11 +16,13 @@ import (
 
 	"github.com/opensourceways/software-package-server/common/infrastructure/postgresql"
 	"github.com/opensourceways/software-package-server/softwarepkg/app"
-	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/emailimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pkgmanagerimpl"
-	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pullrequestimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/softwarepkgadapter"
+	app2 "github.com/opensourceways/software-package-server/watch/app"
+	"github.com/opensourceways/software-package-server/watch/infrastructure/emailimpl"
+	"github.com/opensourceways/software-package-server/watch/infrastructure/pullrequestimpl"
+	wathcrepoimpl "github.com/opensourceways/software-package-server/watch/infrastructure/repositoryimpl"
 )
 
 type options struct {
@@ -101,9 +103,9 @@ func run(cfg *Config) {
 		repositoryimpl.NewSoftwarePkgComment(&cfg.Postgresql.Table),
 	)
 
-	watchService := app.NewWatchService(
+	watchService := app2.NewWatchService(
 		pullRequestImpl,
-		repositoryimpl.NewSoftwarePkgPR(&cfg.Postgresql.Table),
+		wathcrepoimpl.NewSoftwarePkgPR(&cfg.Postgresql.WatchTable),
 		emailimpl.NewEmailService(cfg.Email),
 	)
 

@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
+	watchdomain "github.com/opensourceways/software-package-server/watch/domain"
 )
 
 func (impl *pullRequestImpl) createBranch(pkg *domain.SoftwarePkg) error {
@@ -61,10 +62,15 @@ func (impl *pullRequestImpl) genAppendSigInfoData(pkg *domain.SoftwarePkg) (stri
 	}
 
 	for _, v := range pkg.Repo.Committers {
+		user, err := impl.ua.Find(v.Account.Account(), v.PlatformId)
+		if err != nil {
+			continue
+		}
+
 		data.Committers = append(data.Committers, committer{
 			OpeneulerId: v.Account.Account(),
 			Name:        v.Account.Account(),
-			Email:       v.Email.Email(),
+			Email:       user.Email.Email(),
 		})
 	}
 
@@ -105,7 +111,7 @@ func (impl *pullRequestImpl) genTemplate(fileName string, data interface{}) (str
 	return buf.String(), nil
 }
 
-func (impl *pullRequestImpl) createPR(pkg *domain.SoftwarePkg) (pr domain.PullRequest, err error) {
+func (impl *pullRequestImpl) createPR(pkg *domain.SoftwarePkg) (pr watchdomain.PullRequest, err error) {
 	pkgName := pkg.Basic.Name.PackageName()
 
 	body, err := impl.template.genPRBody(&prBodyTplData{

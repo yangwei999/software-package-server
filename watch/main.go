@@ -14,13 +14,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/common/infrastructure/postgresql"
-	"github.com/opensourceways/software-package-server/softwarepkg/app"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
-	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/emailimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pkgmanagerimpl"
-	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pullrequestimpl"
-	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/useradapterimpl"
+	"github.com/opensourceways/software-package-server/watch/app"
+	"github.com/opensourceways/software-package-server/watch/infrastructure/emailimpl"
+	"github.com/opensourceways/software-package-server/watch/infrastructure/pullrequestimpl"
+	wathcrepoimpl "github.com/opensourceways/software-package-server/watch/infrastructure/repositoryimpl"
 )
 
 type options struct {
@@ -73,6 +74,12 @@ func main() {
 		return
 	}
 
+	if err := useradapterimpl.Init(&cfg.User); err != nil {
+		logrus.Errorf("init maintainer failed, err:%s", err.Error())
+
+		return
+	}
+
 	defer kafka.Exit()
 
 	run(cfg)
@@ -82,15 +89,14 @@ type initServiceTest struct {
 }
 
 func (s initServiceTest) ListApprovedPkgs() ([]string, error) {
-	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276582"}, nil
+	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276583"}, nil
 }
 
 func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 	sig, _ := dp.NewImportingPkgSig("sig-ops")
 	platform, _ := dp.NewPackagePlatform("gitee")
 	account, _ := dp.NewAccount("georgecao")
-	email, _ := dp.NewEmail("932498349@qq.com")
-	name, _ := dp.NewPackageName("yaya")
+	name, _ := dp.NewPackageName("caca")
 	desc, _ := dp.NewPackageDesc("ok: i am desc")
 	prupose, _ := dp.NewPurposeToImportPkg("i am purpose")
 	upstream, _ := dp.NewURL("https://baidu.com")
@@ -99,17 +105,15 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 	commiters := []domain.PkgCommitter{
 		{
 			Account:    account,
-			Email:      email,
 			PlatformId: "gitee",
 		},
 		{
 			Account:    account,
-			Email:      email,
 			PlatformId: "gitee",
 		},
 	}
 	return domain.SoftwarePkg{
-		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276582",
+		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276583",
 		Sig: sig,
 		Repo: domain.SoftwarePkgRepo{
 			Platform:   platform,
@@ -185,7 +189,7 @@ func (s initServiceTest) Send(subject, content string) error {
 }
 
 func run(cfg *Config) {
-	pullRequestImpl, err := pullrequestimpl.NewPullRequestImpl(&cfg.PullRequest)
+	pullRequestImpl, err := pullrequestimpl.NewPullRequestImpl(&cfg.PullRequest, useradapterimpl.UserAdapter())
 	if err != nil {
 		logrus.Errorf("new pull request impl err:%s", err.Error())
 
@@ -199,10 +203,9 @@ func run(cfg *Config) {
 	}
 
 	initService := new(initServiceTest)
-
 	watchService := app.NewWatchService(
 		pullRequestImpl,
-		repositoryimpl.NewSoftwarePkgPR(&cfg.Postgresql.Table),
+		wathcrepoimpl.NewSoftwarePkgPR(&cfg.Postgresql.WatchTable),
 		emailimpl.NewEmailService(cfg.Email),
 	)
 

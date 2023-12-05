@@ -307,13 +307,3 @@ type CmdToTranslateReviewComment = repository.TranslatedReviewCommentIndex
 type TranslatedReveiwCommentDTO struct {
 	Content string `json:"content"`
 }
-
-type CmdToHandleCI struct {
-	*domain.PkgWatch
-	IsSuccess bool
-}
-
-type CmdToHandlePRClosed struct {
-	*domain.PkgWatch
-	RejectedBy string
-}

@@ -33,22 +33,22 @@ func UnmarshalToSoftwarePkgAppliedEvent(data []byte) (e softwarePkgAppliedEvent,
 	return
 }
 
-// softwarePkgApprovedEvent
-type softwarePkgApprovedEvent struct {
+// softwarePkgInitializedEvent
+type softwarePkgInitializedEvent struct {
 	Importer string `json:"importer"`
 	PkgId    string `json:"pkg_id"`
 	PkgName  string `json:"pkg_name"`
 	Platform string `json:"platform"`
 }
 
-func (e *softwarePkgApprovedEvent) Message() ([]byte, error) {
+func (e *softwarePkgInitializedEvent) Message() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-func NewSoftwarePkgInitializedEvent(pkg *SoftwarePkg) softwarePkgApprovedEvent {
+func NewSoftwarePkgInitializedEvent(pkg *SoftwarePkg) softwarePkgInitializedEvent {
 	basic := &pkg.Basic
 
-	return softwarePkgApprovedEvent{
+	return softwarePkgInitializedEvent{
 		Importer: pkg.Importer.Account(),
 		PkgId:    pkg.Id,
 		PkgName:  basic.Name.PackageName(),

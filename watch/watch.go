@@ -12,6 +12,8 @@ import (
 	"github.com/opensourceways/software-package-server/softwarepkg/app"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
+	watchapp "github.com/opensourceways/software-package-server/watch/app"
+	watchdomain "github.com/opensourceways/software-package-server/watch/domain"
 )
 
 type iClient interface {
@@ -21,7 +23,7 @@ type iClient interface {
 func NewWatchingImpl(
 	cfg *Watch,
 	initService app.SoftwarePkgInitAppService,
-	watchService app.SoftwarePkgWatchService,
+	watchService watchapp.SoftwarePkgWatchService,
 ) *WatchingImpl {
 	cli := client.NewClient(func() []byte {
 		return []byte(cfg.RobotToken)
@@ -42,7 +44,7 @@ type WatchingImpl struct {
 	cfg            *Watch
 	cli            iClient
 	initAppService app.SoftwarePkgInitAppService
-	watchService   app.SoftwarePkgWatchService
+	watchService   watchapp.SoftwarePkgWatchService
 	httpCli        utils.HttpClient
 	stop           chan struct{}
 	stopped        chan struct{}
@@ -117,7 +119,7 @@ func (impl *WatchingImpl) watch() {
 	}
 }
 
-func (impl *WatchingImpl) handle(pw *domain.PkgWatch) {
+func (impl *WatchingImpl) handle(pw *watchdomain.PkgWatch) {
 	pkg, err := impl.initAppService.SoftwarePkg(pw.Id)
 	if err != nil {
 		logrus.Errorf("get pkg err: %s", err.Error())
@@ -126,7 +128,7 @@ func (impl *WatchingImpl) handle(pw *domain.PkgWatch) {
 	}
 
 	switch pw.Status {
-	case domain.PkgStatusInitialized:
+	case watchdomain.PkgStatusInitialized:
 		if err = impl.watchService.HandleCreatePR(pw, &pkg); err != nil {
 			logrus.Errorf("handle create pr err: %s", err.Error())
 
@@ -137,11 +139,11 @@ func (impl *WatchingImpl) handle(pw *domain.PkgWatch) {
 		if err = impl.initAppService.HandlePkgInitStarted(pw.Id, url); err != nil {
 			logrus.Errorf("handle init started err: %s", err.Error())
 		}
-	case domain.PkgStatusPRCreated:
+	case watchdomain.PkgStatusPRCreated:
 		if err = impl.handlePR(pw, &pkg); err != nil {
 			logrus.Errorf("handle pr err: %s", err.Error())
 		}
-	case domain.PkgStatusPRMerged:
+	case watchdomain.PkgStatusPRMerged:
 		url, _ := dp.NewURL(pw.PR.Link)
 		if err = impl.initAppService.HandlePkgInitDone(pw.Id, url); err != nil {
 			logrus.Errorf("handle init done err: %s", err.Error())
@@ -153,7 +155,7 @@ func (impl *WatchingImpl) handle(pw *domain.PkgWatch) {
 	}
 }
 
-func (impl *WatchingImpl) handlePR(pw *domain.PkgWatch, pkg *domain.SoftwarePkg) error {
+func (impl *WatchingImpl) handlePR(pw *watchdomain.PkgWatch, pkg *domain.SoftwarePkg) error {
 	pr, err := impl.cli.GetGiteePullRequest(impl.cfg.CommunityOrg,
 		impl.cfg.CommunityRepo, int32(pw.PR.Num))
 	if err != nil {
@@ -172,8 +174,8 @@ func (impl *WatchingImpl) handlePR(pw *domain.PkgWatch, pkg *domain.SoftwarePkg)
 	return impl.handlePRState(pr, pw)
 }
 
-func (impl *WatchingImpl) handleCILabel(pw *domain.PkgWatch, pr sdk.PullRequest, pkg *domain.SoftwarePkg) error {
-	cmd := app.CmdToHandleCI{
+func (impl *WatchingImpl) handleCILabel(pw *watchdomain.PkgWatch, pr sdk.PullRequest, pkg *domain.SoftwarePkg) error {
+	cmd := watchapp.CmdToHandleCI{
 		PkgWatch: pw,
 	}
 
@@ -200,13 +202,13 @@ func (impl *WatchingImpl) handleCILabel(pw *domain.PkgWatch, pr sdk.PullRequest,
 	return nil
 }
 
-func (impl *WatchingImpl) handlePRState(pr sdk.PullRequest, pw *domain.PkgWatch) error {
+func (impl *WatchingImpl) handlePRState(pr sdk.PullRequest, pw *watchdomain.PkgWatch) error {
 	switch pr.State {
 	case sdk.StatusMerged:
 		return impl.watchService.HandlePRMerged(pw)
 
 	case sdk.StatusClosed:
-		cmd := app.CmdToHandlePRClosed{
+		cmd := watchapp.CmdToHandlePRClosed{
 			PkgWatch:   pw,
 			RejectedBy: "maintainer",
 		}
@@ -227,9 +229,9 @@ func (impl *WatchingImpl) isRepoExist(url string) bool {
 
 func (impl *WatchingImpl) AddToWatch(pkdId []string) {
 	for _, id := range pkdId {
-		pw := domain.PkgWatch{
+		pw := watchdomain.PkgWatch{
 			Id:     id,
-			Status: domain.PkgStatusInitialized,
+			Status: watchdomain.PkgStatusInitialized,
 		}
 
 		if err := impl.watchService.AddPkgWatch(&pw); err != nil {

@@ -333,7 +333,7 @@ func (req *softwarePkgRepoRequest) toRepo(importer *domain.User, ua useradapter.
 			err = err1
 			invalidCommitter = append(invalidCommitter, c)
 		} else {
-			r = append(r, domain.PkgCommitter{Account: u.Account, Email: u.Email, PlatformId: c})
+			r = append(r, domain.PkgCommitter{Account: u.Account, PlatformId: c})
 		}
 	}
 

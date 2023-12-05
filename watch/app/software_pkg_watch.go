@@ -6,20 +6,21 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
-	"github.com/opensourceways/software-package-server/softwarepkg/domain/email"
-	"github.com/opensourceways/software-package-server/softwarepkg/domain/pullrequest"
-	"github.com/opensourceways/software-package-server/softwarepkg/domain/repository"
+	watchdomain "github.com/opensourceways/software-package-server/watch/domain"
+	"github.com/opensourceways/software-package-server/watch/domain/email"
+	"github.com/opensourceways/software-package-server/watch/domain/pullrequest"
+	"github.com/opensourceways/software-package-server/watch/domain/repository"
 )
 
 type SoftwarePkgWatchService interface {
-	AddPkgWatch(*domain.PkgWatch) error
-	FindPkgWatch() ([]*domain.PkgWatch, error)
-	HandleCreatePR(*domain.PkgWatch, *domain.SoftwarePkg) error
+	AddPkgWatch(*watchdomain.PkgWatch) error
+	FindPkgWatch() ([]*watchdomain.PkgWatch, error)
+	HandleCreatePR(*watchdomain.PkgWatch, *domain.SoftwarePkg) error
 	HandleUpdatePR(*domain.SoftwarePkg) error
 	HandleCI(*CmdToHandleCI) error
-	HandlePRMerged(*domain.PkgWatch) error
+	HandlePRMerged(*watchdomain.PkgWatch) error
 	HandlePRClosed(*CmdToHandlePRClosed) error
-	HandleDone(*domain.PkgWatch) error
+	HandleDone(*watchdomain.PkgWatch) error
 }
 
 func NewWatchService(pr pullrequest.PullRequest, r repository.Watch, e email.Email) *softwarePkgWatchService {
@@ -36,15 +37,15 @@ type softwarePkgWatchService struct {
 	email     email.Email
 }
 
-func (s *softwarePkgWatchService) AddPkgWatch(pw *domain.PkgWatch) error {
+func (s *softwarePkgWatchService) AddPkgWatch(pw *watchdomain.PkgWatch) error {
 	return s.watchRepo.Add(pw)
 }
 
-func (s *softwarePkgWatchService) FindPkgWatch() ([]*domain.PkgWatch, error) {
+func (s *softwarePkgWatchService) FindPkgWatch() ([]*watchdomain.PkgWatch, error) {
 	return s.watchRepo.FindAll()
 }
 
-func (s *softwarePkgWatchService) HandleCreatePR(watchPkg *domain.PkgWatch, pkg *domain.SoftwarePkg) error {
+func (s *softwarePkgWatchService) HandleCreatePR(watchPkg *watchdomain.PkgWatch, pkg *domain.SoftwarePkg) error {
 	pr, err := s.prCli.Create(pkg)
 	if err != nil {
 		return err
@@ -78,7 +79,7 @@ func (s *softwarePkgWatchService) HandleCI(cmd *CmdToHandleCI) error {
 	return nil
 }
 
-func (s *softwarePkgWatchService) mergePR(pw *domain.PkgWatch) error {
+func (s *softwarePkgWatchService) mergePR(pw *watchdomain.PkgWatch) error {
 	if err := s.prCli.Merge(pw.PR.Num); err != nil {
 		return fmt.Errorf("merge pr(%d) failed: %s", pw.PR.Num, err.Error())
 	}
@@ -92,7 +93,7 @@ func (s *softwarePkgWatchService) mergePR(pw *domain.PkgWatch) error {
 	return nil
 }
 
-func (s *softwarePkgWatchService) HandlePRMerged(pw *domain.PkgWatch) error {
+func (s *softwarePkgWatchService) HandlePRMerged(pw *watchdomain.PkgWatch) error {
 	if pw.IsPkgStatusMerged() {
 		return nil
 	}
@@ -118,7 +119,7 @@ func (s *softwarePkgWatchService) HandlePRClosed(cmd *CmdToHandlePRClosed) error
 	return s.watchRepo.Save(cmd.PkgWatch)
 }
 
-func (s *softwarePkgWatchService) HandleDone(pw *domain.PkgWatch) error {
+func (s *softwarePkgWatchService) HandleDone(pw *watchdomain.PkgWatch) error {
 	pw.SetPkgStatusDone()
 
 	return s.watchRepo.Save(pw)
@@ -129,7 +130,7 @@ func (s *softwarePkgWatchService) emailContent(url string) string {
 }
 
 func (s *softwarePkgWatchService) notifyException(
-	pw *domain.PkgWatch, reason string,
+	pw *watchdomain.PkgWatch, reason string,
 ) error {
 	subject := fmt.Sprintf(
 		"the ci of software package check failed: %s",

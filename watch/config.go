@@ -11,6 +11,7 @@ import (
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pkgmanagerimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/softwarepkgadapter"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/useradapterimpl"
 	"github.com/opensourceways/software-package-server/watch/infrastructure/emailimpl"
 	"github.com/opensourceways/software-package-server/watch/infrastructure/pullrequestimpl"
 	watchrepoimpl "github.com/opensourceways/software-package-server/watch/infrastructure/repositoryimpl"
@@ -58,6 +59,7 @@ type Config struct {
 	Mongo       mongoConfig            `json:"mongo"`
 	PkgManager  pkgmanagerimpl.Config  `json:"pkg_manager"`
 	Topics      Topics                 `json:"topics"`
+	User        useradapterimpl.Config `json:"user"`
 }
 
 func loadConfig(path string) (*Config, error) {
@@ -85,6 +87,7 @@ func (cfg *Config) configItems() []interface{} {
 		&cfg.Mongo.DB,
 		&cfg.Mongo.Collections,
 		&cfg.PkgManager,
+		&cfg.User,
 	}
 }
 

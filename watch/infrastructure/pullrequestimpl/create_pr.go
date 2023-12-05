@@ -62,10 +62,15 @@ func (impl *pullRequestImpl) genAppendSigInfoData(pkg *domain.SoftwarePkg) (stri
 	}
 
 	for _, v := range pkg.Repo.Committers {
+		user, err := impl.ua.Find(v.Account.Account(), v.PlatformId)
+		if err != nil {
+			continue
+		}
+
 		data.Committers = append(data.Committers, committer{
 			OpeneulerId: v.Account.Account(),
 			Name:        v.Account.Account(),
-			Email:       v.Email.Email(),
+			Email:       user.Email.Email(),
 		})
 	}
 

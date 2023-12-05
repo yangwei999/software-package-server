@@ -19,6 +19,7 @@ import (
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/pkgmanagerimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/repositoryimpl"
 	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/softwarepkgadapter"
+	"github.com/opensourceways/software-package-server/softwarepkg/infrastructure/useradapterimpl"
 	app2 "github.com/opensourceways/software-package-server/watch/app"
 	"github.com/opensourceways/software-package-server/watch/infrastructure/emailimpl"
 	"github.com/opensourceways/software-package-server/watch/infrastructure/pullrequestimpl"
@@ -75,13 +76,19 @@ func main() {
 		return
 	}
 
+	if err := useradapterimpl.Init(&cfg.User); err != nil {
+		logrus.Errorf("init maintainer failed, err:%s", err.Error())
+
+		return
+	}
+
 	defer kafka.Exit()
 
 	run(cfg)
 }
 
 func run(cfg *Config) {
-	pullRequestImpl, err := pullrequestimpl.NewPullRequestImpl(&cfg.PullRequest)
+	pullRequestImpl, err := pullrequestimpl.NewPullRequestImpl(&cfg.PullRequest, useradapterimpl.UserAdapter())
 	if err != nil {
 		logrus.Errorf("new pull request impl err:%s", err.Error())
 

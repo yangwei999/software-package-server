@@ -9,10 +9,11 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
+	"github.com/opensourceways/software-package-server/softwarepkg/domain/useradapter"
 	watchdomain "github.com/opensourceways/software-package-server/watch/domain"
 )
 
-func NewPullRequestImpl(cfg *Config) (*pullRequestImpl, error) {
+func NewPullRequestImpl(cfg *Config, ua useradapter.UserAdapter) (*pullRequestImpl, error) {
 	localRepoDir, err := cloneRepo(cfg)
 	if err != nil {
 		return nil, err
@@ -36,6 +37,7 @@ func NewPullRequestImpl(cfg *Config) (*pullRequestImpl, error) {
 		cfg:          *cfg,
 		template:     tmpl,
 		cliToMergePR: robot,
+		ua:           ua,
 		localRepoDir: localRepoDir,
 	}, nil
 }
@@ -77,6 +79,7 @@ type pullRequestImpl struct {
 	cfg          Config
 	template     templateImpl
 	cliToMergePR clientToMergePR
+	ua           useradapter.UserAdapter
 	localRepoDir string
 }
 

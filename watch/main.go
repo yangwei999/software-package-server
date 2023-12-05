@@ -89,14 +89,14 @@ type initServiceTest struct {
 }
 
 func (s initServiceTest) ListApprovedPkgs() ([]string, error) {
-	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276583"}, nil
+	return []string{"d0e361ee-dc00-4d71-b756-32f2dc276584"}, nil
 }
 
 func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 	sig, _ := dp.NewImportingPkgSig("sig-ops")
 	platform, _ := dp.NewPackagePlatform("gitee")
 	account, _ := dp.NewAccount("georgecao")
-	name, _ := dp.NewPackageName("caca")
+	name, _ := dp.NewPackageName("rrrr")
 	desc, _ := dp.NewPackageDesc("ok: i am desc")
 	prupose, _ := dp.NewPurposeToImportPkg("i am purpose")
 	upstream, _ := dp.NewURL("https://baidu.com")
@@ -113,7 +113,7 @@ func (s initServiceTest) SoftwarePkg(pkgId string) (domain.SoftwarePkg, error) {
 		},
 	}
 	return domain.SoftwarePkg{
-		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276583",
+		Id:  "d0e361ee-dc00-4d71-b756-32f2dc276584",
 		Sig: sig,
 		Repo: domain.SoftwarePkgRepo{
 			Platform:   platform,

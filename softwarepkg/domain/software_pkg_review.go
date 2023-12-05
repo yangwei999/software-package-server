@@ -155,25 +155,9 @@ func checkItemReview(item *CheckItem, reviews []UserReview) (rf CheckItemReview)
 type UserReview struct {
 	Reviewer
 
-	Reviews Reviews
+	Reviews []CheckItemReviewInfo
 
 	roles map[string]bool
-}
-
-type Reviews []CheckItemReviewInfo
-
-func (r Reviews) Len() int {
-	return len(r)
-}
-
-func (r Reviews) Less(i, j int) bool {
-	t := strings.Compare(r[i].Id, r[j].Id)
-
-	return t == -1
-}
-
-func (r Reviews) Swap(i, j int) {
-	r[i], r[j] = r[j], r[i]
 }
 
 func (r *UserReview) isEmpty() bool {

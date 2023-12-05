@@ -1,8 +1,6 @@
 package pullrequestimpl
 
 import (
-	"sort"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
@@ -35,7 +33,6 @@ func (impl *pullRequestImpl) createCheckItemsComment(prNum int) error {
 }
 
 func (impl *pullRequestImpl) createReviewDetailComment(review *domain.UserReview, prNUm int) error {
-	sort.Sort(review.Reviews)
 	var items []*checkItem
 
 	for _, v := range review.Reviews {

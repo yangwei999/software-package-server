@@ -4,8 +4,7 @@ import "github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
 
 type PkgCommitter struct {
 	Account    dp.Account // openeuler Id
-	Email      dp.Email
-	PlatformId string // gitee id or github id which depends on the platform of pkg repo
+	PlatformId string     // gitee id or github id which depends on the platform of pkg repo
 }
 
 // SoftwarePkgRepo

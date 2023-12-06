@@ -34,12 +34,16 @@ type prBodyTplData struct {
 	PkgLink string
 }
 
-type reviewDetailTplData struct {
-	Reviewer   string
-	CheckItems []*checkItem
+type checkItemsTplData struct {
+	CheckItems []domain.CheckItem
 }
 
-type checkItem struct {
+type reviewDetailTplData struct {
+	Reviewer   string
+	CheckItems []*checkItemTpl
+}
+
+type checkItemTpl struct {
 	Id      string
 	Name    string
 	Desc    string
@@ -114,7 +118,7 @@ func (impl *templateImpl) genRepoYaml(data *repoYamlTplData, f string) error {
 	return ioutil.WriteFile(f, buf.Bytes(), 0644)
 }
 
-func (impl *templateImpl) genCheckItems(data *domain.Config) (string, error) {
+func (impl *templateImpl) genCheckItems(data *checkItemsTplData) (string, error) {
 	return impl.gen(impl.checkItemsTpl, data)
 }
 

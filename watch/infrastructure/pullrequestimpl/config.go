@@ -3,8 +3,6 @@ package pullrequestimpl
 import (
 	"fmt"
 	"strings"
-
-	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 )
 
 type Config struct {
@@ -13,7 +11,6 @@ type Config struct {
 	SoftwarePkg    softwarePkg          `json:"software_pkg"`
 	ShellScript    shellConfig          `json:"shell_script"`
 	CommunityRobot communityRobotConfig `json:"community_robot"`
-	*domain.Config
 }
 
 func (cfg *Config) SetDefault() {

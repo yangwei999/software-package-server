@@ -1,9 +1,6 @@
 package pullrequestimpl
 
 import (
-	"sort"
-	"strings"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
@@ -15,19 +12,23 @@ var checkItemResult = map[bool]string{
 }
 
 func (impl *pullRequestImpl) addReviewComment(pkg *domain.SoftwarePkg, prNum int) {
-	if err := impl.createCheckItemsComment(prNum); err != nil {
+	var items localCheckItems = pkg.CheckItems()
+
+	if err := impl.createCheckItemsComment(prNum, items); err != nil {
 		logrus.Errorf("add check items comment err: %s", err.Error())
 	}
 
 	for _, v := range pkg.Reviews {
-		if err := impl.createReviewDetailComment(&v, prNum); err != nil {
+		if err := impl.createReviewDetailComment(items, &v, prNum); err != nil {
 			logrus.Errorf("create review comment of %s err: %s", v.Reviewer.Account.Account(), err.Error())
 		}
 	}
 }
 
-func (impl *pullRequestImpl) createCheckItemsComment(prNum int) error {
-	body, err := impl.template.genCheckItems(impl.cfg.Config)
+func (impl *pullRequestImpl) createCheckItemsComment(prNum int, items []domain.CheckItem) error {
+	body, err := impl.template.genCheckItems(&checkItemsTplData{
+		CheckItems: items,
+	})
 	if err != nil {
 		return err
 	}
@@ -35,29 +36,30 @@ func (impl *pullRequestImpl) createCheckItemsComment(prNum int) error {
 	return impl.comment(prNum, body)
 }
 
-func (impl *pullRequestImpl) createReviewDetailComment(review *domain.UserReview, prNUm int) error {
-	var items []*checkItem
+func (impl *pullRequestImpl) createReviewDetailComment(
+	items localCheckItems,
+	review *domain.UserReview,
+	prNUm int,
+) error {
 
-	var localReviews Reviews = review.Reviews
-	sort.Sort(localReviews)
-
-	for _, v := range localReviews {
-		item := impl.findCheckItem(v.Id)
-		if item == nil {
+	var itemsTpl []*checkItemTpl
+	for _, v := range review.Reviews {
+		itemTpl := impl.findCheckItem(v.Id, items)
+		if itemTpl == nil {
 			continue
 		}
 
-		item.Result = checkItemResult[v.Pass]
+		itemTpl.Result = checkItemResult[v.Pass]
 		if v.Comment != nil {
-			item.Comment = v.Comment.ReviewComment()
+			itemTpl.Comment = v.Comment.ReviewComment()
 		}
 
-		items = append(items, item)
+		itemsTpl = append(itemsTpl, itemTpl)
 	}
 
 	body, err := impl.template.genReviewDetail(&reviewDetailTplData{
 		Reviewer:   review.Account.Account(),
-		CheckItems: items,
+		CheckItems: itemsTpl,
 	})
 	if err != nil {
 		return err
@@ -66,10 +68,10 @@ func (impl *pullRequestImpl) createReviewDetailComment(review *domain.UserReview
 	return impl.comment(prNUm, body)
 }
 
-func (impl *pullRequestImpl) findCheckItem(id string) *checkItem {
-	for _, v := range impl.cfg.CheckItems {
+func (impl *pullRequestImpl) findCheckItem(id string, items localCheckItems) *checkItemTpl {
+	for _, v := range items {
 		if v.Id == id {
-			return &checkItem{
+			return &checkItemTpl{
 				Id:   id,
 				Name: v.Name,
 				Desc: v.Desc,
@@ -87,18 +89,4 @@ func (impl *pullRequestImpl) comment(prNum int, content string) error {
 	)
 }
 
-type Reviews []domain.CheckItemReviewInfo
-
-func (r Reviews) Len() int {
-	return len(r)
-}
-
-func (r Reviews) Less(i, j int) bool {
-	t := strings.Compare(r[i].Id, r[j].Id)
-
-	return t == -1
-}
-
-func (r Reviews) Swap(i, j int) {
-	r[i], r[j] = r[j], r[i]
-}
+type localCheckItems []domain.CheckItem

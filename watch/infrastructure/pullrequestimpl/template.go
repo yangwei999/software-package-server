@@ -38,7 +38,7 @@ type checkItemsTplData struct {
 
 type reviewDetailTplData struct {
 	Reviewer   string
-	CheckItems []checkItemTpl
+	CheckItems []*checkItemTpl
 }
 
 type checkItemTpl struct {

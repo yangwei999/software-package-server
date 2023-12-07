@@ -1,6 +1,8 @@
 package pullrequestimpl
 
 import (
+	"strconv"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
@@ -12,22 +14,32 @@ var checkItemResult = map[bool]string{
 }
 
 func (impl *pullRequestImpl) addReviewComment(pkg *domain.SoftwarePkg, prNum int) {
-	var items localCheckItems = pkg.CheckItems()
+	items := pkg.CheckItems()
+	itemsIdMap := impl.itemsIdMap(items)
 
-	if err := impl.createCheckItemsComment(prNum, items); err != nil {
+	if err := impl.createCheckItemsComment(items, itemsIdMap, prNum); err != nil {
 		logrus.Errorf("add check items comment err: %s", err.Error())
 	}
 
 	for _, v := range pkg.Reviews {
-		if err := impl.createReviewDetailComment(items, &v, prNum); err != nil {
+		if err := impl.createReviewDetailComment(&v, itemsIdMap, prNum); err != nil {
 			logrus.Errorf("create review comment of %s err: %s", v.Reviewer.Account.Account(), err.Error())
 		}
 	}
 }
 
-func (impl *pullRequestImpl) createCheckItemsComment(prNum int, items []domain.CheckItem) error {
+func (impl *pullRequestImpl) createCheckItemsComment(
+	items []domain.CheckItem,
+	itemsMap map[string]checkItemTpl,
+	prNum int,
+) error {
+	var itemsTpl []checkItemTpl
+	for _, v := range items {
+		itemsTpl = append(itemsTpl, itemsMap[v.Id])
+	}
+
 	body, err := impl.template.genCheckItems(&checkItemsTplData{
-		CheckItems: items,
+		CheckItems: itemsTpl,
 	})
 	if err != nil {
 		return err
@@ -37,15 +49,15 @@ func (impl *pullRequestImpl) createCheckItemsComment(prNum int, items []domain.C
 }
 
 func (impl *pullRequestImpl) createReviewDetailComment(
-	items localCheckItems,
 	review *domain.UserReview,
+	itemsMap map[string]checkItemTpl,
 	prNUm int,
 ) error {
 
-	var itemsTpl []*checkItemTpl
+	var itemsTpl []checkItemTpl
 	for _, v := range review.Reviews {
-		itemTpl := impl.findCheckItem(v.Id, items)
-		if itemTpl == nil {
+		itemTpl, ok := itemsMap[v.Id]
+		if !ok {
 			continue
 		}
 
@@ -68,20 +80,6 @@ func (impl *pullRequestImpl) createReviewDetailComment(
 	return impl.comment(prNUm, body)
 }
 
-func (impl *pullRequestImpl) findCheckItem(id string, items localCheckItems) *checkItemTpl {
-	for _, v := range items {
-		if v.Id == id {
-			return &checkItemTpl{
-				Id:   id,
-				Name: v.Name,
-				Desc: v.Desc,
-			}
-		}
-	}
-
-	return nil
-}
-
 func (impl *pullRequestImpl) comment(prNum int, content string) error {
 	return impl.cli.CreatePRComment(
 		impl.cfg.CommunityRobot.Org, impl.cfg.CommunityRobot.Repo,
@@ -89,4 +87,15 @@ func (impl *pullRequestImpl) comment(prNum int, content string) error {
 	)
 }
 
-type localCheckItems []domain.CheckItem
+func (impl *pullRequestImpl) itemsIdMap(items []domain.CheckItem) map[string]checkItemTpl {
+	m := make(map[string]checkItemTpl)
+	for i, v := range items {
+		m[v.Id] = checkItemTpl{
+			Id:   strconv.Itoa(i + 1),
+			Name: v.Name,
+			Desc: v.Desc,
+		}
+	}
+
+	return m
+}

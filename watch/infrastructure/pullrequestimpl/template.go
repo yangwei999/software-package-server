@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"text/template"
-
-	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 )
 
 type sigInfoTplData struct {
@@ -35,12 +33,12 @@ type prBodyTplData struct {
 }
 
 type checkItemsTplData struct {
-	CheckItems []domain.CheckItem
+	CheckItems []checkItemTpl
 }
 
 type reviewDetailTplData struct {
 	Reviewer   string
-	CheckItems []*checkItemTpl
+	CheckItems []checkItemTpl
 }
 
 type checkItemTpl struct {

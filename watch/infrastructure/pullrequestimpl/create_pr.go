@@ -61,7 +61,8 @@ func (impl *pullRequestImpl) genAppendSigInfoData(pkg *domain.SoftwarePkg) (stri
 		PkgName: pkg.Basic.Name.PackageName(),
 	}
 
-	for _, v := range pkg.Repo.Committers {
+	committers := append(pkg.Repo.Committers, pkg.Importer)
+	for _, v := range committers {
 		user, err := impl.ua.Find(v.Account.Account(), pkg.Repo.Platform.PackagePlatform())
 		if err != nil {
 			logrus.Errorf("get email of %s %s error:%s",

@@ -120,9 +120,11 @@ func (impl *WatchingImpl) watch() {
 }
 
 func (impl *WatchingImpl) handle(pw *watchdomain.PkgWatch) {
+	log := logrus.WithField("pkg_id", pw.Id)
+
 	pkg, err := impl.initAppService.SoftwarePkg(pw.Id)
 	if err != nil {
-		logrus.Errorf("get pkg err: %s", err.Error())
+		log.Errorf("get pkg err: %s", err.Error())
 
 		return
 	}
@@ -130,27 +132,27 @@ func (impl *WatchingImpl) handle(pw *watchdomain.PkgWatch) {
 	switch pw.Status {
 	case watchdomain.PkgStatusInitialized:
 		if err = impl.watchService.HandleCreatePR(pw, &pkg); err != nil {
-			logrus.Errorf("handle create pr err: %s", err.Error())
+			log.Errorf("handle create pr err: %s", err.Error())
 
 			return
 		}
 
 		url, _ := dp.NewURL(pw.PR.Link)
 		if err = impl.initAppService.HandlePkgInitStarted(pw.Id, url); err != nil {
-			logrus.Errorf("handle init started err: %s", err.Error())
+			log.Errorf("handle init started err: %s", err.Error())
 		}
 	case watchdomain.PkgStatusPRCreated:
 		if err = impl.handlePR(pw, &pkg); err != nil {
-			logrus.Errorf("handle pr err: %s", err.Error())
+			log.Errorf("handle pr err: %s", err.Error())
 		}
 	case watchdomain.PkgStatusPRMerged:
 		url, _ := dp.NewURL(pw.PR.Link)
 		if err = impl.initAppService.HandlePkgInitDone(pw.Id, url); err != nil {
-			logrus.Errorf("handle init done err: %s", err.Error())
+			log.Errorf("handle init done err: %s", err.Error())
 		}
 
 		if err = impl.watchService.HandleDone(pw); err != nil {
-			logrus.Errorf("handle watch done err: %s", err.Error())
+			log.Errorf("handle watch done err: %s", err.Error())
 		}
 	}
 }

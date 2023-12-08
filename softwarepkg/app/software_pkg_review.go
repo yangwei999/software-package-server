@@ -9,7 +9,9 @@ import (
 	"github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
 )
 
-func (s *softwarePkgService) GetReview(pid string, user *domain.User) ([]CheckItemUserReviewDTO, error) {
+func (s *softwarePkgService) GetReview(pid string, user *domain.User, lang dp.Language) (
+	[]CheckItemUserReviewDTO, error,
+) {
 	pkg, _, err := s.repo.Find(pid)
 	if err != nil {
 		return nil, parseErrorForFindingPkg(err)
@@ -27,8 +29,8 @@ func (s *softwarePkgService) GetReview(pid string, user *domain.User) ([]CheckIt
 
 		r[i] = CheckItemUserReviewDTO{
 			Id:        item.Id,
-			Name:      item.Name,
-			Desc:      item.Desc,
+			Name:      item.GetName(lang),
+			Desc:      item.GetDesc(lang),
 			Owner:     item.OwnerDesc(&pkg),
 			CanReview: canReview,
 		}

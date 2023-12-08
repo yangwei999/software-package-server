@@ -3,7 +3,6 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/opensourceways/software-package-server/allerror"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
@@ -319,66 +318,4 @@ func (info *CheckItemReviewInfo) String(title string) string {
 	}
 
 	return fmt.Sprintf("%s. %s, %s", title, pass, v)
-}
-
-// CheckItem
-type CheckItem struct {
-	Id    string
-	Name  string
-	Desc  string
-	Owner dp.CommunityRole
-
-	// If true, keep the review record of reviewer, otherwise clear all the records about
-	// this item when relevant modifications happened.
-	// For example, the review about the item whether the user aggreed to
-	// to be committer of the pkg should be kept.
-	Keep bool
-
-	// If true, only the owner can review this item else anyone can review.
-	// For example, onlye sig maintainer can determine whether the sig of pkg is correct.
-	OnlyOwner bool
-
-	// This check item should be checked again when the relevant modifications happened.
-	Modifications []string
-}
-
-func (item *CheckItem) isOwnerOfItem(roles map[string]bool) bool {
-	return roles != nil && roles[item.Owner.CommunityRole()]
-}
-
-func (item *CheckItem) canReview(roles map[string]bool) bool {
-	return !item.OnlyOwner || item.isOwnerOfItem(roles)
-}
-
-func (item *CheckItem) needRecheck(ms map[string]bool) bool {
-	for _, v := range item.Modifications {
-		if ms[v] {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (item *CheckItem) OwnerDesc(pkg *SoftwarePkg) string {
-	switch item.Owner.CommunityRole() {
-	case dp.CommunityRoleTC.CommunityRole():
-		return "TC members"
-
-	case dp.CommunityRoleCommitter.CommunityRole():
-		return item.Id
-
-	case dp.CommunityRoleSigMaintainer.CommunityRole():
-		return item.Id + " Sig Maintainer"
-
-	case dp.CommunityRoleRepoMember.CommunityRole():
-		return fmt.Sprintf(
-			"%s Sig Maintainer or committers: %s",
-			pkg.Sig.ImportingPkgSig(),
-			strings.Join(pkg.Repo.CommitterIds(), ", "),
-		)
-
-	default:
-		return ""
-	}
 }

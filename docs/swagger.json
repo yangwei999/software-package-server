@@ -259,6 +259,12 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "language",
+                        "name": "language",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -373,6 +379,12 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "language",
+                        "name": "language",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -955,7 +967,6 @@
         "controller.softwarePkgRepoRequest": {
             "type": "object",
             "required": [
-                "committers",
                 "repo_link"
             ],
             "properties": {
@@ -973,7 +984,6 @@
         "controller.softwarePkgRequest": {
             "type": "object",
             "required": [
-                "committers",
                 "desc",
                 "pkg_name",
                 "reason",

@@ -20,11 +20,11 @@ type SoftwarePkgService interface {
 	Update(*CmdToUpdateSoftwarePkgApplication) error
 	Retest(string, *domain.User) error
 
-	Get(string) (SoftwarePkgDTO, error)
+	Get(string, dp.Language) (SoftwarePkgDTO, error)
 	ListPkgs(*CmdToListPkgs) (SoftwarePkgSummariesDTO, error)
 
 	Review(pid string, user *domain.Reviewer, reviews []domain.CheckItemReviewInfo) (err error)
-	GetReview(pid string, user *domain.User) ([]CheckItemUserReviewDTO, error)
+	GetReview(pid string, user *domain.User, lang dp.Language) ([]CheckItemUserReviewDTO, error)
 }
 
 var (
@@ -65,9 +65,11 @@ func (s *softwarePkgService) ApplyNewPkg(cmd *CmdToApplyNewSoftwarePkg) (
 		cmd.Sig, &cmd.Repo, &cmd.Basic, cmd.Spec, cmd.SRPM, &cmd.Importer,
 	)
 	if s.pkgService.IsPkgExisted(cmd.Basic.Name) {
+		/* TODO recover later
 		err = errorSoftwarePkgExists
 
 		return
+		*/
 	}
 
 	if err = s.repo.Add(&v); err != nil {
@@ -216,7 +218,7 @@ func (s *softwarePkgService) addCommentToRetest(pkgId string) {
 	}
 }
 
-func (s *softwarePkgService) Get(pid string) (dto SoftwarePkgDTO, err error) {
+func (s *softwarePkgService) Get(pid string, lang dp.Language) (dto SoftwarePkgDTO, err error) {
 	v, _, err := s.repo.Find(pid)
 	if err != nil {
 		err = parseErrorForFindingPkg(err)
@@ -224,7 +226,7 @@ func (s *softwarePkgService) Get(pid string) (dto SoftwarePkgDTO, err error) {
 		return
 	}
 
-	toSoftwarePkgDTO(&v, &dto)
+	toSoftwarePkgDTO(&v, &dto, lang)
 
 	return
 }

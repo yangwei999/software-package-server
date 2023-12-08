@@ -3,7 +3,6 @@ package app
 import (
 	"github.com/sirupsen/logrus"
 
-	commonrepo "github.com/opensourceways/software-package-server/common/domain/repository"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain/dp"
 	"github.com/opensourceways/software-package-server/softwarepkg/domain/message"
@@ -207,6 +206,8 @@ func (s softwarePkgMessageService) HandlePkgClosed(event *domain.SoftwarePkgClos
 
 // ImportPkg
 func (s softwarePkgMessageService) ImportPkg(cmd CmdToHandlePkgAlreadyExisted) error {
+	return nil
+	/* TODO refactor later
 	v, err := s.manager.GetPkg(cmd.PkgName)
 	if err != nil {
 		logrus.Errorf(
@@ -229,4 +230,5 @@ func (s softwarePkgMessageService) ImportPkg(cmd CmdToHandlePkgAlreadyExisted) e
 	}
 
 	return err
+	*/
 }

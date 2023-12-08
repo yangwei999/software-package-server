@@ -271,6 +271,12 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "language",
+                        "name": "language",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -385,6 +391,12 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "language",
+                        "name": "language",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -967,7 +979,6 @@ const docTemplate = `{
         "controller.softwarePkgRepoRequest": {
             "type": "object",
             "required": [
-                "committers",
                 "repo_link"
             ],
             "properties": {
@@ -985,7 +996,6 @@ const docTemplate = `{
         "controller.softwarePkgRequest": {
             "type": "object",
             "required": [
-                "committers",
                 "desc",
                 "pkg_name",
                 "reason",

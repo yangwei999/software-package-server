@@ -159,11 +159,26 @@ func (ctl SoftwarePkgController) ListPkgs(ctx *gin.Context) {
 // @Tags  SoftwarePkg
 // @Accept json
 // @Param    id         path	string  true    "id of software package"
+// @param    language   query	string  false   "language"
 // @Success 200 {object} app.SoftwarePkgDTO
 // @Failure 400 {object} ResponseData
 // @Router /v1/softwarepkg/{id} [get]
 func (ctl SoftwarePkgController) Get(ctx *gin.Context) {
-	if v, err := ctl.service.Get(ctx.Param("id")); err != nil {
+	var req softwarePkgGetQuery
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	lang, err := req.language()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	if v, err := ctl.service.Get(ctx.Param("id"), lang); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)
@@ -176,10 +191,25 @@ func (ctl SoftwarePkgController) Get(ctx *gin.Context) {
 // @Tags  SoftwarePkg
 // @Accept json
 // @Param    id         path	string  true    "id of software package"
+// @param    language   query	string  false   "language"
 // @Success 200 {object} app.CheckItemUserReviewDTO
 // @Failure 400 {object} ResponseData
 // @Router /v1/softwarepkg/{id}/review [get]
 func (ctl SoftwarePkgController) GetReview(ctx *gin.Context) {
+	var req softwarePkgGetQuery
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
+	lang, err := req.language()
+	if err != nil {
+		commonctl.SendBadRequestParam(ctx, err)
+
+		return
+	}
+
 	user, err := middleware.UserChecking().FetchUser(ctx)
 	if err != nil {
 		commonctl.SendError(ctx, err)
@@ -187,7 +217,7 @@ func (ctl SoftwarePkgController) GetReview(ctx *gin.Context) {
 		return
 	}
 
-	if v, err := ctl.service.GetReview(ctx.Param("id"), &user); err != nil {
+	if v, err := ctl.service.GetReview(ctx.Param("id"), &user, lang); err != nil {
 		commonctl.SendError(ctx, err)
 	} else {
 		commonctl.SendRespOfGet(ctx, v)

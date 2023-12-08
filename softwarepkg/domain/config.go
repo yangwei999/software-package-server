@@ -91,10 +91,12 @@ func (cfg *Config) Validate() (err error) {
 }
 
 type checkItemConfig struct {
-	Id    string `json:"id"     required:"true"`
-	Name  string `json:"name"   required:"true"`
-	Desc  string `json:"desc"   required:"true"`
-	Owner string `json:"owner"  required:"true"`
+	Id     string `json:"id"        required:"true"`
+	Name   string `json:"name"      required:"true"`
+	Desc   string `json:"desc"      required:"true"`
+	NameEn string `json:"name_en"   required:"true"`
+	DescEn string `json:"desc_en"   required:"true"`
+	Owner  string `json:"owner"     required:"true"`
 
 	// If true, keep the review record of reviewer, otherwise clear all the records about
 	// this item when relevant modifications happened.
@@ -126,6 +128,8 @@ func (cfg *checkItemConfig) toCheckItem() (item CheckItem, err error) {
 	item.Id = cfg.Id
 	item.Name = cfg.Name
 	item.Desc = cfg.Desc
+	item.NameEn = cfg.NameEn
+	item.DescEn = cfg.DescEn
 	item.Keep = cfg.Keep
 	item.OnlyOwner = cfg.OnlyOwner
 

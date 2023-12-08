@@ -264,7 +264,6 @@ definitions:
       repo_link:
         type: string
     required:
-    - committers
     - repo_link
     type: object
   controller.softwarePkgRequest:
@@ -290,7 +289,6 @@ definitions:
       upstream:
         type: string
     required:
-    - committers
     - desc
     - pkg_name
     - reason
@@ -464,6 +462,10 @@ paths:
         name: id
         required: true
         type: string
+      - description: language
+        in: query
+        name: language
+        type: string
       responses:
         "200":
           description: OK
@@ -538,6 +540,10 @@ paths:
         in: path
         name: id
         required: true
+        type: string
+      - description: language
+        in: query
+        name: language
         type: string
       responses:
         "200":

@@ -112,7 +112,7 @@ func toOperationLogDOs(logs []domain.SoftwarePkgOperationLog) []softwarePkgOpera
 		}
 	}
 
-	return nil
+	return v
 }
 
 func toReviewDOs(reviews []domain.UserReview) []userReviewDO {

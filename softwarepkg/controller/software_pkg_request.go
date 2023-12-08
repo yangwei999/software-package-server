@@ -178,6 +178,19 @@ func (req *reqToUpdateSoftwarePkg) toCmd(
 	return
 }
 
+// softwarePkgGetQuery
+type softwarePkgGetQuery struct {
+	Language string `json:"language"           form:"language"`
+}
+
+func (req *softwarePkgGetQuery) language() (dp.Language, error) {
+	if req.Language == "" {
+		return dp.NewLanguage(dp.Chinese)
+	}
+
+	return dp.NewLanguage(req.Language)
+}
+
 // softwarePkgListQuery
 type softwarePkgListQuery struct {
 	Phase        string `json:"phase"          form:"phase"`
@@ -185,7 +198,7 @@ type softwarePkgListQuery struct {
 	Importer     string `json:"importer"       form:"importer"`
 	Platform     string `json:"platform"       form:"platform"`
 	LastId       string `json:"last_id"        form:"last_id"`
-	Count        bool   `json:"count"       form:"count"`
+	Count        bool   `json:"count"          form:"count"`
 	PageNum      int    `json:"page_num"       form:"page_num"`
 	CountPerPage int    `json:"count_per_page" form:"count_per_page"`
 }

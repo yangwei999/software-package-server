@@ -2,6 +2,11 @@ package dp
 
 import "strings"
 
+const (
+	Chinese = "chinese"
+	English = "english"
+)
+
 var config Config
 
 func Init(cfg *Config, sv SigValidator, words sensitiveWordsValidator) {
@@ -27,7 +32,7 @@ type Config struct {
 
 func (cfg *Config) SetDefault() {
 	if len(cfg.SupportedLanguages) == 0 {
-		cfg.SupportedLanguages = []string{"chinese", "english"}
+		cfg.SupportedLanguages = []string{Chinese, English}
 	}
 
 	if cfg.MaxLengthOfPackageName <= 0 {

@@ -99,7 +99,7 @@ type SoftwarePkgDTO struct {
 	Reviews    SoftwarePkgReviewDTO         `json:"reviews"`
 }
 
-func toSoftwarePkgDTO(pkg *domain.SoftwarePkg, dto *SoftwarePkgDTO) {
+func toSoftwarePkgDTO(pkg *domain.SoftwarePkg, dto *SoftwarePkgDTO, lang dp.Language) {
 	basic := &pkg.Basic
 
 	*dto = SoftwarePkgDTO{
@@ -121,7 +121,7 @@ func toSoftwarePkgDTO(pkg *domain.SoftwarePkg, dto *SoftwarePkgDTO) {
 		Upstream:   pkg.Basic.Upstream.URL(),
 		Committers: pkg.Repo.CommitterIds(),
 		Logs:       toSoftwarePkgOperationLogDTOs(pkg.Logs),
-		Reviews:    toSoftwarePkgReviewDTO(pkg),
+		Reviews:    toSoftwarePkgReviewDTO(pkg, lang),
 	}
 }
 
@@ -163,6 +163,7 @@ func toSoftwarePkgOperationLogDTO(v *domain.SoftwarePkgOperationLog) SoftwarePkg
 func toSoftwarePkgOperationLogDTOs(v []domain.SoftwarePkgOperationLog) (r []SoftwarePkgOperationLogDTO) {
 	if n := len(v); n > 0 {
 		r = make([]SoftwarePkgOperationLogDTO, n)
+
 		for i := range v {
 			r[i] = toSoftwarePkgOperationLogDTO(&v[i])
 		}
@@ -176,7 +177,7 @@ type SoftwarePkgReviewDTO struct {
 	Reviewers []string             `json:"reviewers"`
 }
 
-func toSoftwarePkgReviewDTO(pkg *domain.SoftwarePkg) (dto SoftwarePkgReviewDTO) {
+func toSoftwarePkgReviewDTO(pkg *domain.SoftwarePkg, lang dp.Language) (dto SoftwarePkgReviewDTO) {
 	if rs := pkg.Reviews; len(rs) > 0 {
 		v := make([]string, len(rs))
 
@@ -191,7 +192,7 @@ func toSoftwarePkgReviewDTO(pkg *domain.SoftwarePkg) (dto SoftwarePkgReviewDTO) 
 
 	v := make([]CheckItemReviewDTO, len(reviews))
 	for i := range reviews {
-		v[i] = toCheckItemReviewDTO(&reviews[i], pkg)
+		v[i] = toCheckItemReviewDTO(&reviews[i], pkg, lang)
 	}
 
 	dto.Items = v
@@ -214,13 +215,13 @@ type CheckItemReviewDTO struct {
 	Reviews   []UserCheckItemReviewDTO `json:"reviews"`
 }
 
-func toCheckItemReviewDTO(r *domain.CheckItemReview, pkg *domain.SoftwarePkg) CheckItemReviewDTO {
+func toCheckItemReviewDTO(r *domain.CheckItemReview, pkg *domain.SoftwarePkg, lang dp.Language) CheckItemReviewDTO {
 	item := r.Item
 
 	dto := CheckItemReviewDTO{
 		Id:    item.Id,
-		Name:  item.Name,
-		Desc:  item.Desc,
+		Name:  item.GetName(lang),
+		Desc:  item.GetDesc(lang),
 		Owner: r.Item.OwnerDesc(pkg),
 	}
 

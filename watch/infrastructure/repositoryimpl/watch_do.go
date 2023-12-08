@@ -6,6 +6,10 @@ import (
 	"github.com/opensourceways/software-package-server/watch/domain"
 )
 
+const (
+	fieldStatus = "status"
+)
+
 type SoftwarePkgPRDO struct {
 	PkgId     string    `gorm:"column:pkg_id"`
 	PRNum     int       `gorm:"column:pr_num"`

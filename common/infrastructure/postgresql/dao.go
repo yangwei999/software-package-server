@@ -75,6 +75,10 @@ func NewDBTable(name string) dbTable {
 	return dbTable{name: name}
 }
 
+func (t dbTable) DBInstance() *gorm.DB {
+	return db.Table(t.name)
+}
+
 func (t dbTable) Insert(filter, result interface{}) error {
 	query := db.Table(t.name).Where(filter).FirstOrCreate(result)
 

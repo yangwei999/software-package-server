@@ -8,6 +8,8 @@ const (
 	PkgStatusException   = "exception" // more information in the email of maintainer
 )
 
+var PkgStatusNeedToHandle = []string{PkgStatusInitialized, PkgStatusPRCreated, PkgStatusPRMerged}
+
 type PkgWatch struct {
 	Id     string
 	Status string

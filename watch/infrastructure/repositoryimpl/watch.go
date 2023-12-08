@@ -42,12 +42,8 @@ func (s *softwarePkgPR) Save(pw *domain.PkgWatch) error {
 
 func (s *softwarePkgPR) FindAll() ([]*domain.PkgWatch, error) {
 	var res []SoftwarePkgPRDO
-	err := s.cli.GetRecords(
-		[]postgresql.ColumnFilter{},
-		&res,
-		postgresql.Pagination{},
-		nil,
-	)
+
+	err := s.cli.DBInstance().Where(fieldStatus+" IN ?", domain.PkgStatusNeedToHandle).Find(&res).Error
 	if err != nil {
 		return nil, err
 	}

@@ -96,7 +96,8 @@ func (impl *pkgCIImpl) Clear(ciId int, name dp.PackageName) error {
 	impl.mutex.Lock()
 	defer impl.mutex.Unlock()
 
-	_, err, _ := libutils.RunCmd(params...)
+	out, err, _ := libutils.RunCmd(params...)
+	logrus.Errorf("clear err %s", string(out))
 
 	return err
 }

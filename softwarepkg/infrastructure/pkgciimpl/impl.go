@@ -146,6 +146,7 @@ func (impl *pkgCIImpl) Download(files []domain.SoftwarePkgCodeSourceFile, name d
 
 	out, err, _ := libutils.RunCmd(params...)
 	if err != nil {
+		logrus.Errorf("download err: %s,  out : %s", err.Error(), string(out))
 		return false, err
 	}
 
